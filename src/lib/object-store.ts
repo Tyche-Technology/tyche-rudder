@@ -16,7 +16,6 @@ let cached: ObjectStore | null = null
 const OBJECT_KEY = /^issues\/[1-9]\d*\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function localFsDirectory(): string {
-  if (process.env.RUDDER_E2E === 'true') return path.join(os.tmpdir(), 'rudder-e2e-t12', 'objects')
   if (process.env.NODE_ENV === 'production') {
     throw new Error('object-store: filesystem backend is disabled in production')
   }

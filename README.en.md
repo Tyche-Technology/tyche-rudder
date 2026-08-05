@@ -118,8 +118,9 @@ npm run coverage:gate         # >=80% coverage for src/domain, src/lib, and src/
 
 Run browser journeys separately against real Postgres 15 and the production
 build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299,
-migrations, seeding, and cleanup. It uses a temporary `fs:` bucket for object
-storage.
+migrations, seeding, and cleanup. An E2E-only Node preload excluded from the
+Docker image injects Slack redirection and object storage, so production code
+keeps only the fixed Slack URL and GCS boundary.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P

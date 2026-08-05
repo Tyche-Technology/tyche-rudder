@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import os from 'node:os'
@@ -29,6 +29,16 @@ afterAll(async () => {
 })
 
 describe('getObjectStore (fs: backend, real disk — not the fake test store)', () => {
+  it('rejects the filesystem backend in production even when a test flag is present', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('RUDDER_E2E', 'true')
+    try {
+      expect(() => getObjectStore()).toThrow(/filesystem backend is disabled in production/)
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
   it('round-trips real bytes through the filesystem', async () => {
     const store = getObjectStore()
     const data = Buffer.from('hello attachment bytes')

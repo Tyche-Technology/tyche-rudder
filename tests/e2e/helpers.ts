@@ -34,11 +34,9 @@ export const E2E_ENV = {
   // one explicit, e2e-only opt-out; unset everywhere else, including a real
   // deploy.
   DISABLE_AUTH_RATE_LIMIT: 'true',
-  RUDDER_E2E: 'true',
   SLACK_BOT_TOKEN: 'e2e',
   SLACK_CHANNEL_ID: E2E_CHANNEL,
   APP_BASE_URL: E2E_BASE_URL,
-  GCS_BUCKET: 'fs',
   NEXT_TELEMETRY_DISABLED: '1',
 } as const
 

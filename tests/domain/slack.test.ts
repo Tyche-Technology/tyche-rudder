@@ -26,7 +26,7 @@ beforeEach(() => {
   for (const k of ENV_KEYS) saved[k] = process.env[k]
   process.env.SLACK_BOT_TOKEN = 'xoxb-test-token'
   process.env.SLACK_API_BASE = 'https://attacker.example/api'
-  delete process.env.RUDDER_E2E
+  process.env.RUDDER_E2E = 'true'
   process.env.APP_BASE_URL = 'http://rudder.test'
   process.env.SLACK_CHANNEL_ID = 'C_TEST_CHANNEL'
 })

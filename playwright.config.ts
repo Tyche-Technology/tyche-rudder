@@ -25,7 +25,10 @@ export default defineConfig({
     url: `${E2E_BASE_URL}/api/health`,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: E2E_ENV,
+    env: {
+      ...E2E_ENV,
+      NODE_OPTIONS: '--import=./tests/e2e/runtime-hooks.mjs',
+    },
     stdout: 'pipe',
     stderr: 'pipe',
     gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
