@@ -1,6 +1,5 @@
 import { constants } from 'node:fs'
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { Storage } from '@google-cloud/storage'
@@ -19,8 +18,10 @@ function localFsDirectory(): string {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('object-store: filesystem backend is disabled in production')
   }
-  if (process.env.NODE_ENV === 'test') return path.join(os.tmpdir(), `rudder-object-store-${process.pid}`)
-  return path.join(os.tmpdir(), 'rudder-object-store-dev')
+  if (process.env.NODE_ENV === 'test') {
+    return path.join(process.cwd(), '.rudder-objects', `test-${process.pid}`)
+  }
+  return path.join(process.cwd(), '.rudder-objects', 'dev')
 }
 
 function localFsPath(dir: string, object: string): string {

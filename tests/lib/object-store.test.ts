@@ -17,7 +17,7 @@ async function createStoredSymlink(key: string, target: string): Promise<void> {
 }
 
 beforeAll(async () => {
-  tmpDir = path.join(os.tmpdir(), `rudder-object-store-${process.pid}`)
+  tmpDir = path.resolve('.rudder-objects', `test-${process.pid}`)
   await fs.rm(tmpDir, { recursive: true, force: true })
   await fs.mkdir(tmpDir, { recursive: true })
   process.env.GCS_BUCKET = 'fs'
@@ -70,7 +70,8 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
 
   it('does not follow a pre-existing symlink while saving', async () => {
     const key = 'issues/2/00000000-0000-4000-8000-000000000002'
-    const outside = path.join(os.tmpdir(), `rudder-object-store-outside-${process.pid}`)
+    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'rudder-object-store-outside-'))
+    const outside = path.join(outsideDir, 'target')
     await fs.writeFile(outside, 'safe')
     try {
       await createStoredSymlink(key, outside)
@@ -78,20 +79,21 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
       await expect(store.save(key, Buffer.from('overwritten'), 'text/plain')).rejects.toThrow()
       expect(await fs.readFile(outside, 'utf8')).toBe('safe')
     } finally {
-      await fs.rm(outside, { force: true })
+      await fs.rm(outsideDir, { recursive: true, force: true })
     }
   })
 
   it('does not follow a pre-existing symlink while reading', async () => {
     const key = 'issues/3/00000000-0000-4000-8000-000000000003'
-    const outside = path.join(os.tmpdir(), `rudder-object-store-outside-read-${process.pid}`)
+    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'rudder-object-store-outside-read-'))
+    const outside = path.join(outsideDir, 'target')
     await fs.writeFile(outside, 'outside')
     try {
       await createStoredSymlink(key, outside)
       const store = getObjectStore()
       await expect(store.read(key)).rejects.toThrow()
     } finally {
-      await fs.rm(outside, { force: true })
+      await fs.rm(outsideDir, { recursive: true, force: true })
     }
   })
 })
