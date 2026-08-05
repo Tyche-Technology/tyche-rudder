@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — 로드맵</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+</head>
+<body data-page="roadmap">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 class="h-panel">로드맵</h1>
+        <span class="eyebrow">roadmap</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="btn btn--sm" type="button">마일스톤 추가</button>
+      <button class="btn btn--primary" type="button">새 이슈</button>
+    </header>
+
+    <div class="view">
+      <!--
+        Timeline data (track = 2026-04-01 → 2026-12-31, mapped to 2%…98%):
+          정산 데이터 정합성        06-30 → 33.5%  row A  arrived
+          주문 파이프라인 핫픽스     07-25 → 42.3%  row B  overdue (D+6)
+          오늘(배)                 07-31 → 44.4%
+          여름 정산 캠페인          08-31 → 55.3%  row A  next deadline (lit buoy)
+          주문 파이프라인 안정화     09-30 → 65.8%  row B  future
+          가격 정책 자동화          12-31 → 98%    row A  dest (THE lighthouse; end-clamped cap)
+          quarter ticks: 07-01 → 33.9%, 10-01 → 66.1%
+      -->
+      <section class="horizon">
+        <!-- 9x9 grid, 4x — morning sun, pixel -->
+        <svg class="horizon__sun horizon__sun--day px" width="36" height="36" viewBox="0 0 9 9" aria-hidden="true">
+          <g fill="currentColor">
+            <rect x="3" y="0" width="3" height="1"/><rect x="2" y="1" width="5" height="1"/>
+            <rect x="1" y="2" width="7" height="2"/><rect x="0" y="4" width="9" height="1"/>
+            <rect x="1" y="5" width="7" height="2"/><rect x="2" y="7" width="5" height="1"/>
+            <rect x="3" y="8" width="3" height="1"/>
+          </g>
+        </svg>
+        <!-- 9x9 grid, 4x — crescent moon, pixel. Dark theme only. -->
+        <svg class="horizon__sun horizon__sun--night px" width="36" height="36" viewBox="0 0 9 9" aria-hidden="true">
+          <g fill="currentColor">
+            <rect x="3" y="0" width="3" height="1"/><rect x="4" y="1" width="3" height="1"/>
+            <rect x="5" y="2" width="3" height="1"/><rect x="5" y="3" width="3" height="1"/>
+            <rect x="6" y="4" width="3" height="1"/><rect x="5" y="5" width="3" height="1"/>
+            <rect x="5" y="6" width="3" height="1"/><rect x="4" y="7" width="3" height="1"/>
+            <rect x="3" y="8" width="3" height="1"/>
+          </g>
+        </svg>
+        <span class="horizon__sea" aria-hidden="true"></span>
+
+        <div class="horizon__head">
+          <div>
+            <span class="eyebrow">2026 항로 · Q2 – Q4</span>
+            <h2 class="h-view" style="margin-top:var(--s-1)">다음 기한: 여름 정산 캠페인 · 31일 남음</h2>
+          </div>
+          <span class="mono muted push">기준 2026-07-31</span>
+        </div>
+
+        <div class="tl-scroll">
+          <div class="tl">
+            <!-- quarter scale -->
+            <span class="tl__qlabel" style="left:2%">Q2</span>
+            <span class="tl__tick" style="left:33.9%" aria-hidden="true"></span>
+            <span class="tl__qlabel" style="left:33.9%">Q3</span>
+            <span class="tl__tick" style="left:66.1%" aria-hidden="true"></span>
+            <span class="tl__qlabel" style="left:66.1%">Q4</span>
+
+            <!-- 정산 데이터 정합성 · 06-30 · arrived -->
+            <span class="tl__cap tl__cap--a" style="--x:33.5%">
+              <span class="tl__name">정산 데이터 정합성</span>
+              <span class="tl__pct">100% · 06-30</span>
+            </span>
+            <span class="tl__port tl__port--done" style="--x:33.5%" aria-hidden="true">
+              <!-- 13x10 grid, 3x — visited port: flag on the coast -->
+              <svg class="px" width="39" height="30" viewBox="0 0 13 10">
+                <g fill="currentColor">
+                  <rect x="6" y="0" width="1" height="7"/>
+                  <rect x="7" y="0" width="4" height="1"/><rect x="7" y="1" width="4" height="1"/>
+                  <rect x="7" y="2" width="3" height="1"/>
+                </g>
+                <g fill="var(--land)">
+                  <rect x="4" y="7" width="5" height="1"/>
+                  <rect x="2" y="8" width="9" height="1"/>
+                  <rect x="0" y="9" width="13" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <!-- 주문 파이프라인 핫픽스 · 07-25 · overdue -->
+            <span class="tl__cap tl__cap--b" style="--x:42.3%">
+              <span class="tl__name">주문 파이프라인 핫픽스</span>
+              <span class="tl__pct tl__pct--overdue">83% · 기한 07-25 · D+6</span>
+            </span>
+            <span class="tl__port tl__port--overdue tl__port--afloat" style="--x:42.3%" aria-hidden="true">
+              <!-- 11x11 grid, 3x — danger buoy (two topmarks), afloat -->
+              <svg class="px" width="33" height="33" viewBox="0 0 11 11">
+                <g fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                  <rect x="5" y="2" width="1" height="1"/>
+                  <rect x="4" y="3" width="3" height="2"/>
+                  <rect x="5" y="5" width="1" height="2"/>
+                  <rect x="3" y="7" width="5" height="1"/>
+                  <rect x="2" y="8" width="7" height="2"/>
+                  <rect x="3" y="10" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <!-- 오늘 -->
+            <span class="tl__ship" style="--x:44.4%" aria-hidden="true">
+              <!-- 17x14 grid, 4x — sailing ship, pixel -->
+              <svg class="px" width="68" height="56" viewBox="0 0 17 14">
+                <g fill="var(--accent)">
+                  <rect x="9" y="1" width="1" height="1"/><rect x="9" y="2" width="2" height="1"/>
+                  <rect x="9" y="3" width="3" height="1"/><rect x="9" y="4" width="4" height="1"/>
+                  <rect x="9" y="5" width="4" height="1"/><rect x="9" y="6" width="5" height="1"/>
+                  <rect x="9" y="7" width="6" height="1"/><rect x="9" y="8" width="6" height="1"/>
+                </g>
+                <g fill="var(--accent)" opacity=".5">
+                  <rect x="7" y="4" width="1" height="1"/><rect x="6" y="5" width="2" height="1"/>
+                  <rect x="5" y="6" width="3" height="1"/><rect x="4" y="7" width="4" height="1"/>
+                  <rect x="4" y="8" width="4" height="1"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="8" y="0" width="1" height="10"/>
+                  <rect x="2" y="10" width="14" height="1"/>
+                  <rect x="3" y="11" width="12" height="1"/>
+                  <rect x="4" y="12" width="10" height="1"/>
+                </g>
+              </svg>
+              <span class="tl__today">오늘</span>
+            </span>
+
+            <!-- 여름 정산 캠페인 · 08-31 · next destination -->
+            <span class="tl__cap tl__cap--a" style="--x:55.3%">
+              <span class="tl__name">여름 정산 캠페인</span>
+              <span class="tl__pct">20% · 08-31</span>
+            </span>
+            <span class="tl__port tl__port--next tl__port--afloat" style="--x:55.3%" aria-hidden="true">
+              <!-- 11x9 grid, 3x — channel buoy, afloat; topmark is the light -->
+              <svg class="px" width="33" height="27" viewBox="0 0 11 9">
+                <g class="by__top" fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="5" y="2" width="1" height="3"/>
+                  <rect x="3" y="5" width="5" height="1"/>
+                  <rect x="2" y="6" width="7" height="2"/>
+                  <rect x="3" y="8" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <!-- 주문 파이프라인 안정화 · 09-30 · future -->
+            <span class="tl__cap tl__cap--b" style="--x:65.8%">
+              <span class="tl__name">주문 파이프라인 안정화</span>
+              <span class="tl__pct">62% · 09-30</span>
+            </span>
+            <span class="tl__port tl__port--future tl__port--afloat" style="--x:65.8%" aria-hidden="true">
+              <!-- 11x9 grid, 3x — channel buoy, afloat; topmark is the light -->
+              <svg class="px" width="33" height="27" viewBox="0 0 11 9">
+                <g class="by__top" fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="5" y="2" width="1" height="3"/>
+                  <rect x="3" y="5" width="5" height="1"/>
+                  <rect x="2" y="6" width="7" height="2"/>
+                  <rect x="3" y="8" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <!-- 가격 정책 자동화 · 12-31 · future, end of track -->
+            <span class="tl__cap tl__cap--a tl__cap--end" style="--x:98%">
+              <span class="tl__name">가격 정책 자동화</span>
+              <span class="tl__pct">0% · 12-31</span>
+            </span>
+            <span class="tl__port tl__port--dest" style="--x:98%" aria-hidden="true">
+              <!-- 15x16 grid, 4x — THE lighthouse: end of the visible route -->
+              <svg class="px" width="60" height="64" viewBox="0 0 15 16">
+                <g class="lh__light" fill="currentColor">
+                  <rect x="6" y="1" width="3" height="1"/>
+                  <rect x="6" y="2" width="3" height="3"/>
+                </g>
+                <g class="lh__beam" fill="currentColor">
+                  <rect x="0" y="3" width="2" height="1"/><rect x="13" y="3" width="2" height="1"/>
+                </g>
+                <g class="lh__tower" fill="currentColor" opacity=".55">
+                  <rect x="5" y="5" width="5" height="1"/>
+                  <rect x="6" y="6" width="3" height="3"/>
+                  <rect x="5" y="9" width="5" height="3"/>
+                  <rect x="4" y="12" width="7" height="1"/>
+                </g>
+                <g fill="var(--land)">
+                  <rect x="3" y="13" width="9" height="1"/>
+                  <rect x="1" y="14" width="13" height="1"/>
+                  <rect x="0" y="15" width="15" height="1"/>
+                </g>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Milestones grouped by the quarter their deadline falls in,
+           ordered by end date — the list mirrors the axis. -->
+      <section class="stack" style="gap:var(--s-6)">
+
+        <div>
+          <div class="inline" style="margin-bottom:var(--s-3)">
+            <h3 class="h-panel">2026 Q2</h3>
+            <span class="mono faint">04-01 → 06-30</span>
+            <span class="mono muted push">1개 마일스톤</span>
+          </div>
+          <div class="grid3">
+            <article class="panel berth berth--arrived" style="--fill:100%">
+              <span class="berth__water" aria-hidden="true"></span>
+              <div class="panel__body">
+                <div class="inline">
+                  <span class="chip chip--done"><span class="flag flag--done" aria-hidden="true"></span>완료<span class="chip__en">Done</span></span>
+                  <span class="mono faint push">04-01 → 06-30</span>
+                </div>
+                <h4 class="h-panel" style="margin:var(--s-3) 0 var(--s-1)">정산 데이터 정합성</h4>
+                <div class="counts" style="margin-top:var(--s-3)">
+                  <span><b>100</b>%</span>
+                  <span>11 / 11</span>
+                </div>
+                <div class="gauge gauge--arrived" style="--fill:100%;margin-top:var(--s-3)"><div class="gauge__fill"></div></div>
+                <div class="divider" style="margin:var(--s-4) 0"></div>
+                <span class="arrived">06-27 전량 도착</span>
+                <p class="hint" style="margin-top:var(--s-3)">최종 수정 · 김한솔 · 06-30</p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <div class="inline" style="margin-bottom:var(--s-3)">
+            <h3 class="h-panel">2026 Q3</h3>
+            <span class="mono faint">07-01 → 09-30</span>
+            <span class="mono muted push">3개 마일스톤</span>
+          </div>
+          <div class="grid3">
+            <article class="panel berth" style="--fill:83%">
+              <span class="berth__water" aria-hidden="true"></span>
+              <div class="panel__body">
+                <div class="inline">
+                  <span class="chip chip--rejected">지연 D+6</span>
+                  <span class="mono faint push">07-01 → 07-25</span>
+                </div>
+                <h4 class="h-panel" style="margin:var(--s-3) 0 var(--s-1)">주문 파이프라인 핫픽스</h4>
+                <div class="counts" style="margin-top:var(--s-3)">
+                  <span><b>83</b>%</span>
+                  <span>5 / 6</span>
+                </div>
+                <div class="gauge" style="--fill:83%;margin-top:var(--s-3)"><div class="gauge__fill"></div></div>
+                <div class="divider" style="margin:var(--s-4) 0"></div>
+                <p class="hint">기한 07-25 경과 · 미완료 1건 — 남은 이슈를 옮기거나 기한을 조정하세요.</p>
+                <p class="hint" style="margin-top:var(--s-3)">최종 수정 · 김한솔 · 07-29</p>
+              </div>
+            </article>
+
+            <article class="panel berth" style="--fill:20%">
+              <span class="berth__water" aria-hidden="true"></span>
+              <div class="panel__body">
+                <div class="inline">
+                  <span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중<span class="chip__en">In Progress</span></span>
+                  <span class="mono faint push">08-01 → 08-31</span>
+                </div>
+                <h4 class="h-panel" style="margin:var(--s-3) 0 var(--s-1)">여름 정산 캠페인</h4>
+                <div class="counts" style="margin-top:var(--s-3)">
+                  <span><b>20</b>%</span>
+                  <span>1 / 5</span>
+                </div>
+                <div class="gauge" style="--fill:20%;margin-top:var(--s-3)"><div class="gauge__fill"></div></div>
+                <div class="divider" style="margin:var(--s-4) 0"></div>
+                <p class="hint">다음 기한 · 31일 남음 — 항로 부표에 불이 켜졌습니다.</p>
+                <p class="hint" style="margin-top:var(--s-3)">최종 수정 · 김한솔 · 07-30</p>
+              </div>
+            </article>
+
+            <article class="panel berth berth--live" style="--fill:62%">
+              <span class="berth__water" aria-hidden="true"></span>
+              <div class="panel__body">
+                <div class="inline">
+                  <span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중<span class="chip__en">In Progress</span></span>
+                  <span class="mono faint push">07-01 → 09-30</span>
+                </div>
+                <h4 class="h-panel" style="margin:var(--s-3) 0 var(--s-1)">주문 파이프라인 안정화</h4>
+                <div class="counts" style="margin-top:var(--s-3)">
+                  <span><b>62</b>%</span>
+                  <span>8 / 13</span>
+                  <span class="counts__ex">반송 2 · 집계 제외</span>
+                </div>
+                <div class="gauge" style="--fill:62%;margin-top:var(--s-3)"><div class="gauge__fill"></div></div>
+                <div class="divider" style="margin:var(--s-4) 0"></div>
+                <ul class="stack--sm" style="display:flex;flex-direction:column">
+                  <li class="rel">
+                    <span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중</span>
+                    <span class="rel__title">mobis 크롤러가 프록시 차단 후 빈 결과를 저장합니다</span>
+                    <span class="ptag ptag--p0 push">P0</span>
+                  </li>
+                  <li class="rel">
+                    <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기</span>
+                    <span class="rel__title">eBay 주문 동기화 03시 배치 누락</span>
+                    <span class="ptag ptag--p0 push">P0</span>
+                  </li>
+                  <li class="rel">
+                    <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기</span>
+                    <span class="rel__title">진척률 주간 슬랙 리포트</span>
+                    <span class="ptag ptag--p1 push">P1</span>
+                  </li>
+                </ul>
+                <p class="hint" style="margin-top:var(--s-3)">최종 수정 · 김한솔 · 07-28</p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <div class="inline" style="margin-bottom:var(--s-3)">
+            <h3 class="h-panel">2026 Q4</h3>
+            <span class="mono faint">10-01 → 12-31</span>
+            <span class="mono muted push">1개 마일스톤</span>
+          </div>
+          <div class="grid3">
+            <article class="panel berth" style="--fill:0%">
+              <span class="berth__water" aria-hidden="true"></span>
+              <div class="panel__body">
+                <div class="inline">
+                  <span class="chip chip--inbox"><span class="flag flag--inbox" aria-hidden="true"></span>계획<span class="chip__en">Planned</span></span>
+                  <span class="mono faint push">10-01 → 12-31</span>
+                </div>
+                <h4 class="h-panel" style="margin:var(--s-3) 0 var(--s-1)">가격 정책 자동화</h4>
+                <div class="counts" style="margin-top:var(--s-3)">
+                  <span><b>0</b>%</span>
+                  <span>0 / 6</span>
+                </div>
+                <div class="gauge" style="--fill:0%;margin-top:var(--s-3)"><div class="gauge__fill"></div></div>
+                <div class="divider" style="margin:var(--s-4) 0"></div>
+                <div class="empty" style="padding:var(--s-5) 0">
+                  <span class="empty__body">아직 항로가 비어 있습니다. 선적 대기 이슈를 이 마일스톤에 배치하면 진척률이 채워집니다.</span>
+                </div>
+                <p class="hint">최종 수정 · 김한솔 · 07-12</p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+      </section>
+
+      <p class="hint" style="margin-top:var(--s-5);max-width:78ch;line-height:var(--lh-prose)">
+        타임라인의 가로 위치는 실제 날짜입니다 — 항구는 마일스톤 종료일에, 배는 오늘에 서 있습니다.
+        마일스톤은 종료일이 속한 분기로 묶입니다. 진척률 분모는 반송된 이슈를 제외한 건수이며,
+        반송 건수는 화면에 함께 적습니다. 정박은 분모에 남습니다 — 취소가 아니라 지연이기 때문입니다.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

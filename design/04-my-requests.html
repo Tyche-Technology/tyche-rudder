@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — 내 요청</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+</head>
+<body data-page="mine">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 class="h-panel">내 요청</h1>
+        <span class="eyebrow">my requests</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="btn btn--primary" type="button">새 이슈</button>
+    </header>
+
+    <div class="view">
+      <div class="view__head">
+        <h2 class="h-view">내가 보낸 화물 5건</h2>
+        <span class="mono muted push">진행 3 · 종료 2</span>
+      </div>
+      <p class="view__lede">
+        내가 요청한 건만 모아 보여줍니다. 상태가 바뀌면 슬랙으로도 알려드립니다.
+        진행이 멈춘 것처럼 보이면 이슈를 열어 댓글로 물어보세요.
+      </p>
+
+      <div class="panel" style="margin-bottom:var(--s-5)">
+        <div class="panel__head">
+          <h3 class="h-card">진행 중</h3>
+          <span class="mono muted push">3건</span>
+        </div>
+        <div class="rows">
+          <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto auto auto 96px auto">
+            <span class="id">#144</span>
+            <span class="row__title">mobis 크롤러가 프록시 차단 후 빈 결과를 저장합니다</span>
+            <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+            <span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중<span class="chip__en">In Progress</span></span>
+            <span class="ptag ptag--p0">P0</span>
+            <span class="mono faint">2026 Q3</span>
+            <a class="btn btn--sm" href="05-issue.html">열기</a>
+          </div>
+          <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto auto auto 96px auto">
+            <span class="id">#151</span>
+            <span class="row__title">eBay 주문 동기화가 03시 배치에서 12건 누락됩니다</span>
+            <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+            <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span>
+            <span class="ptag ptag--p0">P0</span>
+            <span class="mono faint">2026 Q3</span>
+            <a class="btn btn--sm" href="05-issue.html">열기</a>
+          </div>
+          <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto auto auto 96px auto">
+            <span class="id">#153</span>
+            <span class="row__title">공급사 응답 지연 시 알림 기준 시간을 조정해주세요</span>
+            <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+            <span class="chip chip--inbox"><span class="flag flag--inbox" aria-hidden="true"></span>입항 대기<span class="chip__en">Inbox</span></span>
+            <span class="ptag ptag--p2">미정</span>
+            <span class="mono faint">미배정</span>
+            <a class="btn btn--sm" href="05-issue.html">열기</a>
+          </div>
+        </div>
+        <div class="panel__body" style="border-top:1px solid var(--hairline);padding-top:var(--s-3)">
+          <p class="hint">
+            입항 대기는 아직 통관 전이라 우선순위와 마일스톤이 정해지지 않은 상태입니다.
+            보통 3일 안에 통관됩니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head">
+          <h3 class="h-card">종료</h3>
+          <span class="mono muted push">2건</span>
+        </div>
+        <div class="rows">
+          <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto auto auto 96px auto">
+            <span class="id">#139</span>
+            <span class="row__title">토큰 만료 임박 시 슬랙 경고 보내기</span>
+            <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+            <span class="chip chip--done"><span class="flag flag--done" aria-hidden="true"></span>배송 완료<span class="chip__en">Done</span></span>
+            <span class="arrived">도착</span>
+            <span class="mono faint">07-28</span>
+            <a class="btn btn--sm" href="05-issue.html">열기</a>
+          </div>
+          <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto auto auto 96px auto">
+            <span class="id">#122</span>
+            <span class="row__title">대시보드에 공급사별 마진 순위 위젯 추가</span>
+            <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+            <span class="chip chip--rejected"><span class="flag flag--rejected" aria-hidden="true"></span>반송<span class="chip__en">Rejected</span></span>
+            <span class="mono faint">—</span>
+            <span class="mono faint">07-15</span>
+            <a class="btn btn--sm" href="05-issue.html">열기</a>
+          </div>
+          <div style="padding:var(--s-3) var(--s-4) var(--s-4) 68px;background:var(--sunken)">
+            <div class="inline" style="gap:var(--s-3)">
+              <span class="stamp">반송</span>
+              <p class="prose" style="font-size:var(--t-13);flex:1;min-width:220px">
+                <b>#122 반송 사유</b> · 같은 지표를 IT Portal 정산 화면에서 이미 제공하고 있어
+                중복입니다. 필요하시면 Portal 화면에 바로가기를 추가하는 요청으로 다시 올려주세요.
+                <span class="mono faint">— 김한솔 · 07-15</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:var(--s-4);max-width:74ch;line-height:var(--lh-prose)">
+        반송은 요청을 닫는 결정이므로 사유가 반드시 함께 표시됩니다.
+        사유 없이 반송된 이슈는 저장되지 않습니다.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

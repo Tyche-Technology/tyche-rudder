@@ -1,0 +1,34 @@
+# Agent runtime state
+.omc/
+.omx/
+.remember/
+
+# Parallel-lane git worktrees (see README: in-repo, relative symlinks)
+.worktrees/
+
+# Node / Next.js (Phase 1)
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright e2e output (traces/screenshots per playwright.config.ts's outputDir)
+test-results/
+
+# env
+.env*
+!.env.example
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+sa.json
+service-account*.json
+*-credentials.json
+gcp-key*.json
+
+# misc
+.DS_Store

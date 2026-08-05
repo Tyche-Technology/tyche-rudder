@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — 디자인 시스템</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+<style>
+  /* style-guide-only scaffolding — not part of the product CSS */
+  .sg { max-width: 1080px; }
+  .sg__sec { margin-bottom: var(--s-12); }
+  .sg__h { display: flex; align-items: baseline; gap: var(--s-3); margin-bottom: var(--s-2); }
+  .sg__note { color: var(--muted); font-size: var(--t-13); line-height: var(--lh-prose); max-width: 74ch; margin-bottom: var(--s-4); }
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: var(--s-2); }
+  .sw__i { border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+  .sw__c { height: 52px; border-bottom: 1px solid var(--hairline); }
+  .sw__m { padding: var(--s-2); }
+  .sw__n { font-size: var(--t-12); font-weight: 600; }
+  .sw__v { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); }
+  .spec { width: 100%; border-collapse: collapse; font-size: var(--t-13); }
+  .spec th { text-align: left; font-size: var(--t-11); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); font-weight: 500; padding: 0 var(--s-3) var(--s-2) 0; }
+  .spec td { padding: var(--s-2) var(--s-3) var(--s-2) 0; border-top: 1px solid var(--hairline); vertical-align: top; }
+  .spec td:last-child { color: var(--muted); }
+  .demo { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-end; padding: var(--s-4); background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--r-md); }
+  .demo--col { flex-direction: column; align-items: stretch; }
+  .ruler { display: flex; align-items: flex-end; gap: var(--s-2); }
+  .ruler__b { background: var(--accent-wash); border: 1px solid var(--accent); border-radius: 2px; }
+  .ruler__l { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); text-align: center; }
+</style>
+</head>
+<body data-page="system">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 class="h-panel">디자인 시스템</h1>
+        <span class="eyebrow">design tokens &amp; components</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="mono faint">v0.1 · 2026-07-30</span>
+    </header>
+
+    <div class="view sg">
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">방향</h2></div>
+        <p class="sg__note">
+          맑은 아침 항해입니다. 옅은 하늘과 수면이 바탕이 되고, 목적지의 빛인
+          등대 황색(Beacon) 하나가 액센트를 맡습니다. 항구 은유는 장식이 아니라
+          기능이 있는 자리에만 들어갑니다 — 상태는 <b>국제신호기</b>(색 + 패턴 + 라벨),
+          진척률은 <b>흘수선</b>, 로드맵은 <b>수평선</b>. 나머지는 조용하게 둡니다.
+          도착은 시각적으로 보상받아야 하는 사건이므로, 완료색은 흐리게 두지 않고 밝게 씁니다.
+          일러스트는 전부 <b>픽셀 그래픽</b>입니다 — 배, 등대, 파도, 브랜드 마크, 빈 화면.
+          UI 크롬(칩·버튼·표)은 픽셀화하지 않습니다. 밀도와 판독성이 먼저입니다.
+        </p>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">1. 색 토큰</h2><span class="eyebrow">light / dark 동시 정의</span></div>
+        <p class="sg__note">
+          모든 값은 CSS 커스텀 프로퍼티입니다. 다크 테마는 <code class="mono">:root[data-theme="dark"]</code>에서
+          같은 이름을 덮어씁니다. 컴포넌트는 테마를 알지 못합니다.
+        </p>
+        <div class="sw">
+          <div class="sw__i"><div class="sw__c" style="background:var(--canvas)"></div><div class="sw__m"><div class="sw__n">canvas</div><div class="sw__v">#eef4f7 / #0a1620</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--surface)"></div><div class="sw__m"><div class="sw__n">surface</div><div class="sw__v">#ffffff / #10202a</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--sunken)"></div><div class="sw__m"><div class="sw__n">sunken</div><div class="sw__v">#f2f7f9 / #0c1922</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--ink)"></div><div class="sw__m"><div class="sw__n">ink</div><div class="sw__v">#10242e / #e8f1f4</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--muted)"></div><div class="sw__m"><div class="sw__n">muted</div><div class="sw__v">#405b68 / #92aab5</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--faint)"></div><div class="sw__m"><div class="sw__n">faint</div><div class="sw__v">#536e7b / #7b95a2</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--hairline)"></div><div class="sw__m"><div class="sw__n">hairline</div><div class="sw__v">#d7e3e8 / #21323d</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--accent)"></div><div class="sw__m"><div class="sw__n">accent · beacon</div><div class="sw__v">#e0921c / #f2ab3c</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:linear-gradient(180deg,var(--sky-1),var(--sky-2) 60%,var(--sea-1) 60%,var(--sea-2))"></div><div class="sw__m"><div class="sw__n">sky · sea</div><div class="sw__v">수평선 그래픽 전용</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--water)"></div><div class="sw__m"><div class="sw__n">water</div><div class="sw__v">#0e9bb0 / #2ebccf</div></div></div>
+          <div class="sw__i"><div class="sw__c" style="background:var(--focus)"></div><div class="sw__m"><div class="sw__n">focus</div><div class="sw__v">#0e6f9e / #56b6e0</div></div></div>
+        </div>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">2. 상태 = 신호기</h2><span class="eyebrow">colour + pattern + label</span></div>
+        <p class="sg__note">
+          국제신호기는 "멀리서 상태를 알린다"는 목적으로 만들어진 실제 체계입니다.
+          Q기(황색)는 검역·통관 요청, P기(Blue Peter)는 출항 임박을 뜻합니다 —
+          입항 대기와 선적 대기에 문자 그대로 맞습니다. 색 외에 패턴과 라벨이 함께 있으므로
+          색맹·흑백 인쇄·저조도에서도 상태를 읽을 수 있습니다.
+          <b>입항 대기에는 색이 없습니다</b> — 통관(그루밍)이 색을 부여하는 행위입니다.
+        </p>
+        <table class="spec">
+          <thead><tr><th>칩</th><th>패턴</th><th>enum</th><th>의미</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="chip chip--inbox"><span class="flag flag--inbox" aria-hidden="true"></span>입항 대기<span class="chip__en">Inbox</span></span></td>
+              <td>테두리만 (무채색)</td><td class="mono">inbox</td><td>통관 전. 우선순위 없음</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span></td>
+              <td>청색 바탕 흰 사각 (P기)</td><td class="mono">backlog</td><td>통관 완료, 순서 대기</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중<span class="chip__en">In Progress</span></span></td>
+              <td>수평 삼단</td><td class="mono">in_progress</td><td>담당자 작업 중</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--done"><span class="flag flag--done" aria-hidden="true"></span>배송 완료<span class="chip__en">Done</span></span></td>
+              <td>대각 스트라이프</td><td class="mono">done</td><td>완료. 진척률에 포함</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--rejected"><span class="flag flag--rejected" aria-hidden="true"></span>반송<span class="chip__en">Rejected</span></span></td>
+              <td>흰 X (거절)</td><td class="mono">rejected</td><td>사유 필수. 진척률 집계 제외</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--hold"><span class="flag flag--hold" aria-hidden="true"></span>정박<span class="chip__en">On Hold</span></span></td>
+              <td>사분할</td><td class="mono">on_hold</td><td>사유 필수. 재개 가능</td>
+            </tr>
+            <tr>
+              <td><span class="inline"><span class="flag flag--pilot flag--lg" aria-hidden="true"></span><span class="mono">도선사</span></span></td>
+              <td>적백 이분할 (H기)</td><td class="mono">agent</td><td>AI 에이전트 행위자 표식 — 상태 아님</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">3. 우선순위 &amp; 유형</h2></div>
+        <p class="sg__note">
+          우선순위는 텍스트가 1차 신호입니다. P0만 유채색을 쓰므로 보드에서 눈이 P0을 먼저 찾습니다.
+          카드에서는 P0에만 좌측 3px 액센트 엣지가 붙습니다. 유형은 새 색 체계를 만들지 않고
+          글리프와 중성색으로만 구분합니다 — 화면에 색 체계는 상태 하나로 충분합니다.
+        </p>
+        <div class="demo">
+          <span class="ptag ptag--p0">P0</span>
+          <span class="ptag ptag--p1">P1</span>
+          <span class="ptag ptag--p2">P2</span>
+          <span class="divider" style="width:1px;height:24px"></span>
+          <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+          <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+          <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+        </div>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">4. 타입</h2></div>
+        <p class="sg__note">
+          세 역할. <b>Gothic A1</b>은 제목 — 자폭이 넓고 속공간이 열려 있어 큰 크기에서 공기가 통합니다.
+          <b>Pretendard</b>는 본문·UI — 12~14px 밀집 목록에서 한글 판독성이 가장 안정적입니다.
+          <b>IBM Plex Mono</b>는 데이터 — 이슈 번호, 시각, 수량. 고정폭이 열을 만들어 스캔 속도를 올립니다.
+        </p>
+        <table class="spec">
+          <thead><tr><th>토큰</th><th>표본</th><th>용도</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">t-34 / display</td><td><span class="display">순항 중입니다</span></td><td>로그인, 큰 수치</td></tr>
+            <tr><td class="mono">t-26 / h-view</td><td><span class="h-view">입항 대기</span></td><td>화면 제목</td></tr>
+            <tr><td class="mono">t-20 / h-panel</td><td><span class="h-panel">2026 Q3</span></td><td>패널 제목</td></tr>
+            <tr><td class="mono">t-16 / h-card</td><td><span class="h-card">eBay 주문 동기화가 03시 배치에서 12건 누락됩니다</span></td><td>이슈 제목</td></tr>
+            <tr><td class="mono">t-14 / body</td><td>본문 기본. 한글 행간 1.65로 문단을 읽히게 둡니다.</td><td>본문, 폼</td></tr>
+            <tr><td class="mono">t-13 / ui</td><td><span style="font-size:var(--t-13)">목록 행, 버튼, 라벨</span></td><td>밀집 UI</td></tr>
+            <tr><td class="mono">t-12 / meta</td><td><span class="mono">#142 · 2026-07-29 14:02 · v3</span></td><td>메타, 데이터</td></tr>
+            <tr><td class="mono">t-11 / eyebrow</td><td><span class="eyebrow">manifest</span></td><td>구획 라벨</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">5. 간격 · 라운드 · 높이</h2></div>
+        <p class="sg__note">
+          4px 기준. 라운드는 4 / 8 / 12px, 상태 칩과 유형 칩은 완전한 알약형 —
+          도구가 딱딱해 보이지 않게 하되 카드와 패널은 각을 유지해 밀집 목록이 흐트러지지 않게 합니다.
+          그림자는 거의 없습니다. 유일한 예외는 드래그 중인 카드(e-3, 0.5° 회전)로,
+          집어 올렸다는 촉감만 담당합니다.
+        </p>
+        <div class="demo">
+          <div class="ruler">
+            <div><div class="ruler__b" style="width:4px;height:16px"></div><div class="ruler__l">1</div></div>
+            <div><div class="ruler__b" style="width:8px;height:24px"></div><div class="ruler__l">2</div></div>
+            <div><div class="ruler__b" style="width:12px;height:32px"></div><div class="ruler__l">3</div></div>
+            <div><div class="ruler__b" style="width:16px;height:40px"></div><div class="ruler__l">4</div></div>
+            <div><div class="ruler__b" style="width:24px;height:48px"></div><div class="ruler__l">6</div></div>
+            <div><div class="ruler__b" style="width:32px;height:56px"></div><div class="ruler__l">8</div></div>
+            <div><div class="ruler__b" style="width:48px;height:64px"></div><div class="ruler__l">12</div></div>
+          </div>
+          <span class="divider" style="width:1px;height:56px"></span>
+          <div class="inline">
+            <span style="width:56px;height:56px;background:var(--sunken);border:1px solid var(--hairline);border-radius:var(--r-sm);display:grid;place-items:center" class="mono">4</span>
+            <span style="width:56px;height:56px;background:var(--sunken);border:1px solid var(--hairline);border-radius:var(--r-md);display:grid;place-items:center" class="mono">8</span>
+            <span style="width:56px;height:56px;background:var(--sunken);border:1px solid var(--hairline);border-radius:var(--r-lg);display:grid;place-items:center" class="mono">12</span>
+            <span style="width:56px;height:56px;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--e-2);display:grid;place-items:center" class="mono">e-2</span>
+            <span style="width:56px;height:56px;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--e-3);transform:rotate(.5deg);display:grid;place-items:center" class="mono">e-3</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">6. 컴포넌트</h2></div>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">버튼</h3>
+        <div class="demo">
+          <button class="btn btn--primary">새 이슈</button>
+          <button class="btn">통관</button>
+          <button class="btn btn--accent">P0으로 통관</button>
+          <button class="btn btn--danger">반송</button>
+          <button class="btn btn--ghost">취소</button>
+          <button class="btn btn--sm">순서 이동</button>
+          <button class="btn" disabled>저장</button>
+        </div>
+        <p class="sg__note" style="margin-top:var(--s-2)">
+          기본 동작은 잉크색입니다. 액센트 버튼은 화면당 하나까지 — 되돌리기 어려운 결정에만 씁니다.
+          라벨은 동작 이름을 흐름 전체에서 그대로 유지합니다: "통관" 버튼은 "통관했습니다"를 남깁니다.
+        </p>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">폼</h3>
+        <div class="demo demo--col" style="max-width:520px">
+          <div class="field">
+            <label class="label" for="sg-t">제목</label>
+            <input class="input" id="sg-t" value="eBay 주문 동기화가 03시 배치에서 12건 누락됩니다">
+          </div>
+          <div class="inline" style="gap:var(--s-3)">
+            <div class="field" style="flex:1">
+              <label class="label" for="sg-p">제품</label>
+              <div class="select-wrap"><select class="select" id="sg-p"><option>lpa-collected</option><option>tyche-dashboard</option></select></div>
+            </div>
+            <div class="field">
+              <span class="label">우선순위</span>
+              <div class="seg" role="radiogroup" aria-label="우선순위">
+                <button class="seg__b seg__b--p0" role="radio" aria-checked="true">P0</button>
+                <button class="seg__b" role="radio" aria-checked="false">P1</button>
+                <button class="seg__b" role="radio" aria-checked="false">P2</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="sg-d">설명</label>
+            <textarea class="textarea" id="sg-d" placeholder="무엇이 어떻게 안 되는지, 재현 방법이 있으면 함께 적어주세요."></textarea>
+            <span class="hint">첨부는 저장 후 추가할 수 있습니다.</span>
+          </div>
+        </div>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">필터 칩</h3>
+        <div class="demo">
+          <div class="filters">
+            <button class="fchip" aria-pressed="true">전체<span class="fchip__n">32</span></button>
+            <button class="fchip" aria-pressed="false">tyche-dashboard<span class="fchip__n">11</span></button>
+            <button class="fchip" aria-pressed="false">tyche-slack-bot<span class="fchip__n">7</span></button>
+            <button class="fchip" aria-pressed="false">lpa-collected<span class="fchip__n">9</span></button>
+            <button class="fchip" aria-pressed="false">partslink<span class="fchip__n">5</span></button>
+          </div>
+        </div>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">이슈 카드 · 칸반 컬럼</h3>
+        <div class="demo" style="align-items:flex-start">
+          <div class="col" style="width:var(--col-w)">
+            <div class="col__head">
+              <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span>
+              <span class="col__n">3</span>
+            </div>
+            <div class="col__body">
+              <article class="card card--p0">
+                <div class="card__top">
+                  <span class="id">#142</span><span class="ptag ptag--p0">P0</span>
+                  <span class="card__grip" aria-hidden="true">⠿</span>
+                </div>
+                <h4 class="h-card">eBay 주문 동기화가 03시 배치에서 12건 누락됩니다</h4>
+                <div class="card__meta">
+                  <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+                  <span class="mono faint">lpa-collected</span>
+                </div>
+                <footer class="card__foot"><span>박지연</span><span class="push mono">2026 Q3</span></footer>
+              </article>
+              <div class="drop" aria-hidden="true"></div>
+              <article class="card card--lifted">
+                <div class="card__top"><span class="id">#137</span><span class="ptag ptag--p1">P1</span></div>
+                <h4 class="h-card">환율 버퍼를 상품군별로 다르게 설정하고 싶습니다</h4>
+                <div class="card__meta">
+                  <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+                  <span class="mono faint">lpa-collected</span>
+                </div>
+                <footer class="card__foot"><span>김한솔</span><span class="push mono">2026 Q4</span></footer>
+              </article>
+              <article class="card">
+                <div class="card__top"><span class="id">#129</span><span class="ptag ptag--p2">P2</span></div>
+                <h4 class="h-card">정산 리포트 PDF 버튼이 사파리에서 동작하지 않습니다</h4>
+                <div class="card__meta">
+                  <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+                  <span class="mono faint">tyche-dashboard</span>
+                </div>
+                <footer class="card__foot"><span>이수민</span><span class="push mono">미배정</span></footer>
+              </article>
+            </div>
+            <div class="col__note">드래그로 순서 변경 · 키보드는 카드 선택 후 ⌥↑ / ⌥↓</div>
+          </div>
+
+          <div style="flex:1;min-width:260px">
+            <div class="panel berth berth--live" style="--fill:62%">
+              <div class="berth__water" aria-hidden="true"></div>
+              <div class="panel__body">
+                <div class="inline"><span class="eyebrow">milestone</span><span class="push mono muted">2026 Q3</span></div>
+                <h3 class="h-panel" style="margin:var(--s-1) 0 var(--s-3)">3분기 · 주문 파이프라인 안정화</h3>
+                <div class="counts">
+                  <span><b>62</b>%</span>
+                  <span>완료 8 / 집계 13</span>
+                  <span class="counts__ex">반송 2 · 집계 제외</span>
+                </div>
+              </div>
+            </div>
+            <p class="sg__note" style="margin-top:var(--s-3)">
+              시그니처. 진척률은 카드 아래에서 차오르는 수면입니다 — 화물을 실을수록 배가 깊이 잠깁니다.
+              현재 마일스톤에만 아주 느린 수면 흐름이 붙고, <code class="mono">prefers-reduced-motion</code>에서는 멈춥니다.
+              반송 건은 분모에서 빠지며, 빠졌다는 사실을 화면에 적습니다.
+            </p>
+            <div class="gauge gauge--arrived" style="--fill:100%"><div class="gauge__fill"></div></div>
+            <p class="hint" style="margin-top:var(--s-1)">목록용 축약 게이지. 100%는 완료색으로 넘어가고 <span class="arrived">도착</span> 표식이 붙습니다.</p>
+          </div>
+        </div>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">수평선 (로드맵 히어로)</h3>
+        <div class="horizon" style="margin-bottom:var(--s-2)">
+          <svg class="horizon__sun horizon__sun--day px" width="36" height="36" viewBox="0 0 9 9" aria-hidden="true">
+            <g fill="currentColor">
+              <rect x="3" y="0" width="3" height="1"/><rect x="2" y="1" width="5" height="1"/>
+              <rect x="1" y="2" width="7" height="2"/><rect x="0" y="4" width="9" height="1"/>
+              <rect x="1" y="5" width="7" height="2"/><rect x="2" y="7" width="5" height="1"/>
+              <rect x="3" y="8" width="3" height="1"/>
+            </g>
+          </svg>
+          <!-- 9x9 grid, 4x — crescent moon, pixel. Dark theme only. -->
+          <svg class="horizon__sun horizon__sun--night px" width="36" height="36" viewBox="0 0 9 9" aria-hidden="true">
+            <g fill="currentColor">
+              <rect x="3" y="0" width="3" height="1"/><rect x="4" y="1" width="3" height="1"/>
+              <rect x="5" y="2" width="3" height="1"/><rect x="5" y="3" width="3" height="1"/>
+              <rect x="6" y="4" width="3" height="1"/><rect x="5" y="5" width="3" height="1"/>
+              <rect x="5" y="6" width="3" height="1"/><rect x="4" y="7" width="3" height="1"/>
+              <rect x="3" y="8" width="3" height="1"/>
+            </g>
+          </svg>
+          <span class="horizon__sea" aria-hidden="true"></span>
+          <div class="horizon__head">
+            <h4 class="h-panel">2026 항로</h4>
+            <span class="eyebrow push">3 milestones</span>
+          </div>
+          <div class="tl-scroll">
+          <div class="tl">
+            <span class="tl__qlabel" style="left:2%">Q2</span>
+            <span class="tl__tick" style="left:33.9%" aria-hidden="true"></span>
+            <span class="tl__qlabel" style="left:33.9%">Q3</span>
+            <span class="tl__tick" style="left:66.1%" aria-hidden="true"></span>
+            <span class="tl__qlabel" style="left:66.1%">Q4</span>
+
+            <span class="tl__cap tl__cap--a" style="--x:33.5%">
+              <span class="tl__name">정산 데이터 정합성</span>
+              <span class="tl__pct">100% · 06-30</span>
+            </span>
+            <span class="tl__port tl__port--done" style="--x:33.5%" aria-hidden="true">
+              <!-- 13x10 grid, 3x — visited port: flag on the coast -->
+              <svg class="px" width="39" height="30" viewBox="0 0 13 10">
+                <g fill="currentColor">
+                  <rect x="6" y="0" width="1" height="7"/>
+                  <rect x="7" y="0" width="4" height="1"/><rect x="7" y="1" width="4" height="1"/>
+                  <rect x="7" y="2" width="3" height="1"/>
+                </g>
+                <g fill="var(--land)">
+                  <rect x="4" y="7" width="5" height="1"/>
+                  <rect x="2" y="8" width="9" height="1"/>
+                  <rect x="0" y="9" width="13" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <span class="tl__cap tl__cap--b" style="--x:42.3%">
+              <span class="tl__name">주문 파이프라인 핫픽스</span>
+              <span class="tl__pct tl__pct--overdue">83% · 기한 07-25 · D+6</span>
+            </span>
+            <span class="tl__port tl__port--overdue tl__port--afloat" style="--x:42.3%" aria-hidden="true">
+              <!-- 11x11 grid, 3x — danger buoy (two topmarks), afloat -->
+              <svg class="px" width="33" height="33" viewBox="0 0 11 11">
+                <g fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                  <rect x="5" y="2" width="1" height="1"/>
+                  <rect x="4" y="3" width="3" height="2"/>
+                  <rect x="5" y="5" width="1" height="2"/>
+                  <rect x="3" y="7" width="5" height="1"/>
+                  <rect x="2" y="8" width="7" height="2"/>
+                  <rect x="3" y="10" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <span class="tl__ship" style="--x:44.4%" aria-hidden="true">
+              <svg class="px" width="68" height="56" viewBox="0 0 17 14">
+                <g fill="var(--accent)">
+                  <rect x="9" y="1" width="1" height="1"/><rect x="9" y="2" width="2" height="1"/>
+                  <rect x="9" y="3" width="3" height="1"/><rect x="9" y="4" width="4" height="1"/>
+                  <rect x="9" y="5" width="4" height="1"/><rect x="9" y="6" width="5" height="1"/>
+                  <rect x="9" y="7" width="6" height="1"/><rect x="9" y="8" width="6" height="1"/>
+                </g>
+                <g fill="var(--accent)" opacity=".5">
+                  <rect x="7" y="4" width="1" height="1"/><rect x="6" y="5" width="2" height="1"/>
+                  <rect x="5" y="6" width="3" height="1"/><rect x="4" y="7" width="4" height="1"/>
+                  <rect x="4" y="8" width="4" height="1"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="8" y="0" width="1" height="10"/>
+                  <rect x="2" y="10" width="14" height="1"/>
+                  <rect x="3" y="11" width="12" height="1"/>
+                  <rect x="4" y="12" width="10" height="1"/>
+                </g>
+              </svg>
+              <span class="tl__today">오늘</span>
+            </span>
+
+            <span class="tl__cap tl__cap--a" style="--x:55.3%">
+              <span class="tl__name">여름 정산 캠페인</span>
+              <span class="tl__pct">20% · 08-31</span>
+            </span>
+            <span class="tl__port tl__port--next tl__port--afloat" style="--x:55.3%" aria-hidden="true">
+              <!-- 11x9 grid, 3x — channel buoy, afloat; topmark is the light -->
+              <svg class="px" width="33" height="27" viewBox="0 0 11 9">
+                <g class="by__top" fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="5" y="2" width="1" height="3"/>
+                  <rect x="3" y="5" width="5" height="1"/>
+                  <rect x="2" y="6" width="7" height="2"/>
+                  <rect x="3" y="8" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <span class="tl__cap tl__cap--b" style="--x:65.8%">
+              <span class="tl__name">주문 파이프라인 안정화</span>
+              <span class="tl__pct">62% · 09-30</span>
+            </span>
+            <span class="tl__port tl__port--future tl__port--afloat" style="--x:65.8%" aria-hidden="true">
+              <svg class="px" width="33" height="27" viewBox="0 0 11 9">
+                <g class="by__top" fill="currentColor">
+                  <rect x="4" y="0" width="3" height="2"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="5" y="2" width="1" height="3"/>
+                  <rect x="3" y="5" width="5" height="1"/>
+                  <rect x="2" y="6" width="7" height="2"/>
+                  <rect x="3" y="8" width="5" height="1"/>
+                </g>
+              </svg>
+            </span>
+
+            <span class="tl__cap tl__cap--a tl__cap--end" style="--x:98%">
+              <span class="tl__name">가격 정책 자동화</span>
+              <span class="tl__pct">0% · 12-31</span>
+            </span>
+            <span class="tl__port tl__port--dest" style="--x:98%" aria-hidden="true">
+              <!-- 15x16 grid, 4x — THE lighthouse: end of the visible route -->
+              <svg class="px" width="60" height="64" viewBox="0 0 15 16">
+                <g class="lh__light" fill="currentColor">
+                  <rect x="6" y="1" width="3" height="1"/>
+                  <rect x="6" y="2" width="3" height="3"/>
+                </g>
+                <g class="lh__beam" fill="currentColor">
+                  <rect x="0" y="3" width="2" height="1"/><rect x="13" y="3" width="2" height="1"/>
+                </g>
+                <g class="lh__tower" fill="currentColor" opacity=".55">
+                  <rect x="5" y="5" width="5" height="1"/>
+                  <rect x="6" y="6" width="3" height="3"/>
+                  <rect x="5" y="9" width="5" height="3"/>
+                  <rect x="4" y="12" width="7" height="1"/>
+                </g>
+                <g fill="var(--land)">
+                  <rect x="3" y="13" width="9" height="1"/>
+                  <rect x="1" y="14" width="13" height="1"/>
+                  <rect x="0" y="15" width="15" height="1"/>
+                </g>
+              </svg>
+            </span>
+          </div>
+          </div>
+        </div>
+        <p class="sg__note">
+          로드맵 상단에만 놓입니다. <b>가로 위치가 곧 시간</b>입니다 — 트랙은 표시 범위를
+          분기 경계로 반올림해 2%–98%에 선형 매핑하고, 항구는 마일스톤 <b>종료일</b> 위치에,
+          배는 <b>오늘</b> 위치에 섭니다. 은유는 이 축 위에 올라탑니다 —
+          실제 항로표지 체계 그대로: 경유지는 작은 <b>부표</b>, <b>등대는 항로의
+          끝</b>(계획된 마지막 마일스톤)에만 서서 화면에 최대 1개입니다(액센트, 점멸).
+          등대는 장소 개념("항로는 여기서 끝난다")만 주장하고, 시간 긴급도는 부표의
+          불빛이 맡습니다 — <b>다음 기한의 부표만 상단 표지에 불이 켜집니다</b>.
+          "등대 = 최근접 기한" 규칙은 검토 후 기각했습니다: 날짜가 지날 때마다 등대가
+          저절로 점프하고, 지연 중인 실제 초점 대신 손도 안 댄 미래 마일스톤을
+          비추는 거짓 신호가 됩니다. 도착한 마일스톤은 해안의 초록 깃발, 기한 경과는
+          붉은 위험 부표에 <span class="tl__pct tl__pct--overdue" style="position:static;display:inline">D+n</span> 라벨 —
+          배가 지나쳐 버린 표지입니다. 같은 종료일의 마일스톤들은 항구 하나를
+          공유하고 라벨 행으로 구분됩니다. 시각적 높이가 곧 정보 중요도입니다:
+          부표는 낮고 조용하며, 높은 것은 등대와 배뿐입니다. 한 분기에 마일스톤이 몇 개든 자기 날짜에 놓이고,
+          라벨은 날짜순으로 위·아래 두 줄을 번갈아 써서 이웃한 기한끼리 겹치지 않습니다.
+          트랙은 860px 아래에서 가로 스크롤로 전환되며, 움직임은
+          <code class="mono">prefers-reduced-motion</code>에서 전부 정지합니다.
+        </p>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">댓글 · 히스토리</h3>
+        <div class="demo" style="align-items:flex-start">
+          <div class="thread" style="flex:1;min-width:300px">
+            <div class="cmt">
+              <span class="avatar" aria-hidden="true">박</span>
+              <div>
+                <div class="cmt__head"><span class="cmt__who">박지연</span><span class="cmt__role">운영</span><span class="mono faint push">07-29 14:02</span></div>
+                <div class="cmt__body">3시 배치 이후 eBay 주문 12건이 안 들어왔습니다. 주문번호 목록 첨부했습니다.</div>
+              </div>
+            </div>
+            <div class="cmt">
+              <span class="avatar" aria-hidden="true">최</span>
+              <div>
+                <div class="cmt__head"><span class="cmt__who">최민호</span><span class="cmt__role">개발</span><span class="mono faint push">07-29 15:40</span></div>
+                <div class="cmt__body">토큰 만료로 03:02 호출이 401을 받았습니다. 재발급 후 재적재했고, 만료 임박 알림을 붙이겠습니다.</div>
+              </div>
+            </div>
+          </div>
+          <div class="log" style="flex:1;min-width:280px">
+            <div class="log__item">
+              <span class="log__rail"><span class="log__pip"></span></span>
+              <span><span class="log__who">도선사</span> 이(가) 등록 <span class="log__field">created</span></span>
+              <span class="mono faint">07-29 14:02</span>
+            </div>
+            <div class="log__item">
+              <span class="log__rail"><span class="log__pip"></span></span>
+              <span><span class="log__who">김한솔</span> 우선순위 <b>P1 → P0</b> <span class="log__field">priority</span></span>
+              <span class="mono faint">07-29 14:31</span>
+            </div>
+            <div class="log__item">
+              <span class="log__rail"><span class="log__pip"></span></span>
+              <span><span class="log__who">김한솔</span> 상태 <b>입항 대기 → 선적 대기</b> <span class="log__field">status</span></span>
+              <span class="mono faint">07-29 14:31</span>
+            </div>
+            <div class="log__item">
+              <span class="log__rail"><span class="log__pip"></span></span>
+              <span><span class="log__who">최민호</span> 담당자 <b>지정</b> <span class="log__field">assignee_id</span></span>
+              <span class="mono faint">07-29 15:38</span>
+            </div>
+          </div>
+        </div>
+        <p class="sg__note" style="margin-top:var(--s-2)">
+          히스토리 행의 회색 고정폭 꼬리표는 <code class="mono">issue_events.field</code> 원값입니다.
+          값은 snake_case로 동결되어 있으므로 UI는 한국어 라벨로 매핑해 보여주되 원값을 함께 남깁니다.
+        </p>
+
+        <h3 class="h-card" style="margin:var(--s-5) 0 var(--s-2)">빈 화면</h3>
+        <div class="demo" style="align-items:stretch">
+          <div class="panel" style="flex:1;min-width:280px">
+            <div class="empty">
+              <span class="px-sea" aria-hidden="true"></span>
+              <span class="empty__title">입항 대기 중인 화물이 없습니다</span>
+              <span class="empty__body">오늘 바다는 잔잔하네요 ⚓ 새 요청이 들어오면 여기 먼저 도착합니다.</span>
+            </div>
+          </div>
+          <div class="panel" style="flex:1;min-width:280px">
+            <div class="empty">
+              <span class="px-sea" aria-hidden="true"></span>
+              <span class="empty__title">이 분기 항로가 아직 비어 있습니다</span>
+              <span class="empty__body">마일스톤을 만들고 선적 대기 이슈를 배치하면 진척률이 여기 표시됩니다.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sg__sec">
+        <div class="sg__h"><h2 class="h-view">7. 접근성 바닥선</h2></div>
+        <table class="spec">
+          <thead><tr><th>규칙</th><th>구현</th></tr></thead>
+          <tbody>
+            <tr><td>색이 유일한 신호가 아님</td><td>상태 = 색 + 패턴 + 한글/영문 라벨. 우선순위 = 텍스트 우선, P0만 유채색. 유형 = 글리프 + 중성색</td></tr>
+            <tr><td>대비</td><td>본문·라벨 전부 WCAG AA 이상 (측정값은 명세 문서 §7)</td></tr>
+            <tr><td>포커스</td><td>모든 조작 요소에 <code class="mono">:focus-visible</code> 2px 링, 액센트와 구별되는 파랑</td></tr>
+            <tr><td>드래그 대체 경로</td><td>백로그 순서 변경은 카드 포커스 후 ⌥↑ / ⌥↓ 로 동일 동작</td></tr>
+            <tr><td>모션</td><td><code class="mono">prefers-reduced-motion</code>에서 수면 흐름·전환 정지</td></tr>
+            <tr><td>테마</td><td>light / dark 동시 정의, <code class="mono">color-scheme</code>으로 폼 컨트롤까지 전환</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
