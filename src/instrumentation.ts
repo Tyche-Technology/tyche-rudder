@@ -28,19 +28,15 @@ process.on('unhandledRejection', (reason) => {
 // background 500 instead of crashing. Confirmed against the actual
 // generated server.js (not just `next start`), and confirmed a second time
 // against this exact route set (GET /api/v1/products returns a normal 401
-// with a bad secret, no crash) — see task-10-report.md, fix round 2.
+// with a bad secret, no crash).
 //
 // The real production guarantees live elsewhere, specifically because
 // nothing here can be trusted to run before Next starts serving:
 // - scripts/docker-entrypoint.sh refuses to exec node server.js at all with
 //   a bad secret. It runs before Next is even loaded, so there is no
 //   framework code path that can swallow it.
-// - src/app/api/health/route.ts reflects config validity. The deploy
-//   pipeline's rollback polls that endpoint (see
-//   deploy/docker-compose.prod.yml's healthcheck and
-//   .github/workflows/deploy.yml's wget loop) — it was never actually
-//   driven by process exit, so this is what makes it correctly catch a bad
-//   secret even if the entrypoint script is ever bypassed.
+// - src/app/api/health/route.ts reflects config validity so an orchestrator
+//   can fail readiness or roll back without depending on process exit.
 export async function register() {
   if (!isAuthSecretValid(process.env.BETTER_AUTH_SECRET)) throw new Error(BOOT_ERROR)
 }

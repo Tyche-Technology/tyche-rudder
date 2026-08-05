@@ -76,8 +76,7 @@ describe('better-auth instance', () => {
   // `disableImplicitSignUp` is only a *default* — a caller can flip it back
   // with a client-supplied `requestSignUp: true`. Two independent flags close
   // the two independent code paths that read it; each test below removes one
-  // flag, confirms the test fails for the right reason, then restores it
-  // (see task-2-bypass-fix-report.md for the paired before/after output).
+  // flag, confirms the test fails for the right reason, then restores it.
   it('Google id-token sign-in rejects requestSignUp: true without ever reaching Google', async () => {
     // A syntactically valid JWT *shape* (decodable header with kid+alg) but
     // no real signature — enough to prove where verifyIdToken stops.

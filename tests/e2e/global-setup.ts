@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdir, rm } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { createServer, type Server, type ServerResponse } from 'node:http'
 import { createConnection } from 'node:net'
 import { join } from 'node:path'
@@ -11,7 +10,6 @@ import { z } from 'zod'
 import {
   E2E_BASE_URL,
   E2E_ENV,
-  E2E_ROOT,
   E2E_USER_SLACK_ID,
   E2E_USERS,
   type SlackCapture,
@@ -20,6 +18,7 @@ import {
 const DATABASE_PORT = 5435
 const SLACK_PORT = 3299
 const PROJECT_ROOT = process.cwd()
+const OBJECT_STORE_DIRECTORY = join(PROJECT_ROOT, '.rudder-objects', 'production')
 const slackPostSchema = z.object({ channel: z.string(), text: z.string() })
 const inviteResponseSchema = z.object({ ok: z.literal(true), data: z.object({ inviteUrl: z.url() }) })
 
@@ -170,9 +169,6 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     throw new Error(`port ${DATABASE_PORT} is already in use`)
   }
 
-  await rm(E2E_ROOT, { recursive: true, force: true })
-  await mkdir(E2E_ROOT, { recursive: true })
-
   const containerName = `rudder-e2e-t12-${process.pid}`
   let startedDatabase = false
   let slackServer: Server | null = null
@@ -180,10 +176,11 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   async function cleanup(): Promise<void> {
     if (slackServer) await closeServer(slackServer)
     if (startedDatabase) run('docker', ['stop', containerName])
-    await rm(E2E_ROOT, { recursive: true, force: true })
+    rmSync(OBJECT_STORE_DIRECTORY, { recursive: true, force: true })
   }
 
   try {
+    rmSync(OBJECT_STORE_DIRECTORY, { recursive: true, force: true })
     if (!databaseAlreadyRunning) {
       run('docker', [
         'run', '--detach', '--rm', '--name', containerName,

@@ -199,13 +199,9 @@ to run if any user already exists.
 
 ## 8. Amendments (2026-08-04, planning stage)
 
-Discovered while writing the implementation plan
-(`docs/superpowers/plans/2026-08-04-auth-redesign.md`):
-
 - **Agent issue-intake contract changes**: `POST /api/v1/issues`'s
   agent-only `requesterPortalId` field becomes `requesterEmail` (portalId
-  no longer exists). <slack-bot-repo>'s caller must switch fields when this
-  ships — breaking change noted in README.
+  no longer exists).
 - **`scripts/seed.ts` (CSV user seeder) is retired** — users now enter via
   invites; only `scripts/seed-admin.ts` (first-admin bootstrap) remains.
 - **`nextCookies()` plugin is not used**: the two app routes that set

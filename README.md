@@ -35,7 +35,7 @@ design/**           승인된 디자인 목업 + 토큰 원본(rudder.css)
 ```bash
 npm install
 docker compose up -d          # postgres 15, 기본 포트 5432
-cp .env.example .env.local    # DATABASE_URL, BETTER_AUTH_SECRET
+cp .env.example .env.local    # DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL
 npm run db:migrate
 SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... SEED_ADMIN_NAME=... npm run seed:admin
                               # 최초 admin 1명만. 이후 사용자는 초대로 추가한다
@@ -62,8 +62,8 @@ id로 유효한 세션을 위조할 수 있기 때문이다. 32자 이상이어�
 `server.js`)는 `register()`가 던진 예외를 안정적으로 죽음으로 이어주지
 않는다 — `NextServer.prepare()`가 `register()`를 fire-and-forget으로
 실행하고, 그 실패를 백그라운드 500으로 집어삼킨다(`node_modules/next/dist/server/next.js`
-추적, `docker build`한 실제 이미지로 재현 확인). 그래서 배포가 실제로 의지하는
-안전장치는 둘 다 Next 바깥에 있다:
+추적, `docker build`한 실제 이미지로 재현 확인). 그래서 Docker 배포는 Next
+바깥의 entrypoint를 부팅 경계로 사용하고, health endpoint로 설정 유효성을 노출한다:
 
 - `scripts/docker-entrypoint.sh` — 컨테이너의 `CMD`. Next를 로드하기 전에
   `BETTER_AUTH_SECRET`과 `BETTER_AUTH_URL`을 검증하고, 실패하면 `node server.js`를
@@ -78,10 +78,8 @@ id로 유효한 세션을 위조할 수 있기 때문이다. 32자 이상이어�
   `new URL(x).origin`으로 정규화해서 끝 슬래시를 지우므로, 그 시점엔 이미
   안전하다 — 실제 방어선은 앱 레벨의 정규화이지 이 셸 스크립트가 아니다.
 - `GET /api/health` — 단순 liveness가 아니라 `BETTER_AUTH_SECRET` 유효성도
-  함께 본다. 배포 파이프라인의 자동 롤백은 애초에 프로세스 종료가 아니라 **이
-  엔드포인트를 폴링**해서 판단한다(`deploy/docker-compose.prod.yml`의
-  healthcheck, `.github/workflows/deploy.yml`의 wget 루프) — 그래서 이쪽이
-  시크릿 쪽의 실제 방어선이다.
+  함께 본다. 운영자는 프로세스 종료 여부를 추측하는 대신 이 endpoint를 readiness
+  또는 rollback 판단에 사용할 수 있다.
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
@@ -123,8 +121,11 @@ npm run coverage:gate         # src/domain + src/lib + src/ui 커버리지 ≥80
 ```
 
 실제 Postgres 15와 production build를 지나는 브라우저 여정은 별도로 실행한다.
-E2E harness가 Postgres(:5435)와 mock Slack(:3299)을 띄우고 migration·seed·정리를
-소유하며, 객체 저장은 임시 `fs:` 버킷을 사용한다.
+E2E harness가 Postgres(:5435), mock Slack(:3299), migration·seed·정리를 소유한다.
+E2E 전용 Node preload는 Slack만 리디렉션하고, 첨부파일은 production filesystem
+backend를 실제로 사용한 뒤 정리한다. 앱의 `getObjectStore()`와 Docker entrypoint는
+모두 production의 `STORAGE_EMULATOR_HOST`를 거부한다. standalone 산출물과 Docker
+이미지에는 테스트 suite·hook·Playwright 설정이 들어가지 않는다.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P
@@ -223,28 +224,11 @@ id-token 로그인 경로(`disableIdTokenSignIn: true`)가 다시 열린다.
 (`src/lib/api-auth.ts` — `cookieCache`를 쓰지 않는 것은 의도적이다). 관리자가
 계정을 정지하면 그 세션은 **즉시** 죽는다 — 쿠키 만료를 기다리지 않는다.
 
-**Breaking change (Task 11):** 에이전트가 이슈를 생성할 때 보내던
-`requesterPortalId` 필드가 `requesterEmail`(기존 유저의 이메일)로 바뀌었다.
-`tyche-slack-bot`(다른 리포)의 `rudder_create_issue` 툴과 Slack-유저→Rudder-유저
-매핑이 아직 이 계약을 따라가지 못했다 — PR #34로 그쪽을 먼저 갱신하지 않으면
-봇이 올리는 이슈가 전부 검증 실패한다
-(`docs/superpowers/plans/2026-08-03-rudder-launch-runbook.md`의 prerequisite P3).
-
 ## Deploy
 
-`master` 푸시(관련 경로 변경 시) 또는 `workflow_dispatch`로 GCP VM `tyche-rudder`
-(asia-northeast3-a, Tailscale tailnet 전용, 공인 IP 없음)에 배포한다.
-Cloud Run이 아니라 VM인 이유: Cloud SQL 인스턴스 `tyche-db`가 같은 리전이라
-`cloud-sql-proxy` 사이드카로 로컬 연결이 되고, 사람은 `tailscale serve`로만
-접근한다(ts.net이 TLS를 종단하므로 `Secure` 쿠키가 그대로 동작). 공인 인그레스가
-없어 로그인 rate limiting은 Phase 3 범위에서 의도적으로 뺐다.
-
-```
-push(master) → build & push (GHCR, digest pin)
-             → migrate.mjs (컨테이너 교체 전, 실패 시 이전 컨테이너가 계속 서빙)
-             → docker compose up -d
-             → /api/health 헬스체크 → 실패 시 :rollback 태그로 자동 롤백
-```
+이 공개 저장소는 Tyche 운영 인프라에 배포하지 않는다. 조직 전용 배포 워크플로,
+인프라 설정, 런북, 저장소 시크릿은 별도의 비공개 저장소에만 있다. 공개 저장소에서는
+검증·보안 자동화만 실행한다.
 
 - `Dockerfile`: `node:22-alpine` 3단계 빌드(deps → builder → runner), 논루트
   `node` 유저, `output: 'standalone'`. `drizzle-orm`·`postgres`는 standalone
@@ -252,25 +236,15 @@ push(master) → build & push (GHCR, digest pin)
   명시적으로 복사한다 — 둘 다 자체 의존성이 없는 패키지라 그걸로 충분하다.
   `CMD`는 `node server.js`가 아니라 `scripts/docker-entrypoint.sh`(위
   BETTER_AUTH_SECRET 단락 참고) — Next가 뜨기 전에 `sh`로
-  `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL`을 미리 검증한다.
+  `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL`을 미리 검증하고 production GCS
+  에뮬레이터 설정을 거부한다.
 - `scripts/migrate.mjs`: `drizzle-kit`(devDependency)을 이미지에 넣지 않고
-  런타임 의존성만으로 마이그레이션을 적용한다. 0004~0006은 additive라 실패해도
-  롤백 시 스키마를 되돌릴 필요가 없다. **0003은 예외다** — `milestones.starts_on`/
-  `ends_on`을 `timestamp`에서 `date`로 바꾸는 단방향 마이그레이션이다. 배포
-  파이프라인은 컨테이너 교체 전에 마이그레이션을 적용하고, 롤백은 이미지만
-  되돌린다(스키마는 그대로) — 그래서 0003 이후 롤백 이미지로 돌아가면 그
-  이미지는 `date` 컬럼의 `"YYYY-MM-DD"` 문자열을 여전히 `timestamp`인 것처럼
-  읽는다. 첫 배포에는 롤백 이미지 자체가 없어 무해하지만, 두 번째 배포부터는
-  이 경계를 넘는 롤백에 스키마 결정이 필요하다.
-- `deploy/docker-compose.prod.yml`: `rudder` + `cloud-sql-proxy` 두 서비스.
-  시크릿(`DB_PASSWORD`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-  `SLACK_BOT_TOKEN`, `APP_BASE_URL`, `GCS_BUCKET`, 선택적
-  `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`)은 커밋된 파일에 없고 VM의
-  환경(`.env`)에서 읽는다. SA 키는 VM 디스크에서
-  `./credentials:/credentials:ro`로 읽기 전용 마운트된다.
-- GitHub Actions 시크릿: `VM_HOST`(tailnet 이름 `tyche-rudder`), `VM_USERNAME`,
-  `VM_SSH_KEY_BASE64`, `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`.
-- VM·DB·버킷·시크릿 프로비저닝은 별도 런북(Task 14, PO 확인 후 실행) 소관이다.
+  런타임 의존성만으로 마이그레이션을 적용한다. 실제 운영자는 데이터베이스,
+  인증, Slack 환경 변수를 자신의 비밀 관리 계층에서 주입해야 한다.
+- 첨부파일 저장소는 `OBJECT_STORE_BACKEND=fs` 또는 `gcs`를 명시한다. `fs`는
+  `.rudder-objects/production`을 사용하므로 Docker에서는
+  `/app/.rudder-objects`에 영속·쓰기 가능한 볼륨을 마운트한다. `gcs`는
+  `GCS_BUCKET`과 Application Default Credentials가 필요하다.
 
 ## Docs
 
@@ -278,7 +252,6 @@ push(master) → build & push (GHCR, digest pin)
 |------|------|
 | `docs/superpowers/specs/2026-07-30-issue-tracker-design.md` | PRD (§7 네이밍 규칙, §10 AI 가드레일이 구속력을 가짐) |
 | `docs/superpowers/design/2026-07-30-rudder-design-system.md` | 디자인 시스템 규격 (토큰, 신호기, 타임라인 규칙, 카피 덱) |
-| `docs/superpowers/plans/2026-07-30-rudder-overview.md` | 페이즈 개요와 이월 항목 |
 | `design/index.html` | 살아있는 스타일 가이드 (브라우저로 열면 됨) |
 
 ## License

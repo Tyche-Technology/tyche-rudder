@@ -10,7 +10,7 @@
 // dragLeave silently drop clientY / relatedTarget when building a plain
 // Event for an unrecognized type — every property below the helper had to
 // be verified by hand against a throwaway instrumented run of board-column
-// before trusting it (see task-17-report.md). MouseEvent's own constructor
+// before trusting it. MouseEvent's own constructor
 // DOES honor clientY and relatedTarget (both are real MouseEventInit
 // fields); dataTransfer isn't, so it's bolted on afterward via
 // defineProperty, since MouseEvent has no accessor guarding that name.

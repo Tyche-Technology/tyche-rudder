@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 const css = readFileSync(new URL('./rudder.css', import.meta.url), 'utf8')
 // pull the two theme blocks straight from the stylesheet so the table cannot go stale
-const block = (re) => { const m = css.match(re); const o = {}; for (const [, k, v] of m[1].matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)) o[k] = v.toLowerCase(); return o }
+const block = (re) => { const m = css.match(re); const o = new Map(); for (const [, k, v] of m[1].matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)) o.set(k, v.toLowerCase()); return o }
 const L = block(/:root \{([\s\S]*?)\n\}/)
 const D = block(/:root\[data-theme='dark'\] \{([\s\S]*?)\n\}/)
 
@@ -33,12 +33,12 @@ let worst = [Infinity, '']
 console.log('| pair | light | dark |')
 console.log('|---|---|---|')
 for (const [label, fg, bg] of rows) {
-  const l = R(L[fg], L[bg]), d = R(D[fg], D[bg])
+  const l = R(L.get(fg), L.get(bg)), d = R(D.get(fg), D.get(bg))
   for (const [v, t] of [[l, 'light'], [d, 'dark']]) if (v < worst[0]) worst = [v, `${label} (${t})`]
   const f = v => `${v.toFixed(2)}:1 ${v >= 4.5 ? 'AA' : v >= 3 ? 'AA-large only' : 'FAIL'}`
   console.log(`| \`${label}\` | ${f(l)} | ${f(d)} |`)
 }
 console.log(`\nworst = ${worst[0].toFixed(2)}:1 (${worst[1]})`)
-console.log(`tokens parsed: light=${Object.keys(L).length} dark=${Object.keys(D).length}`)
+console.log(`tokens parsed: light=${L.size} dark=${D.size}`)
 
 if (worst[0] < 4.5) { console.error(`\nFAIL: ${worst[1]} is below AA`); process.exit(1) }

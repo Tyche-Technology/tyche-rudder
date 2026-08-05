@@ -12,4 +12,9 @@ describe('global response security headers', () => {
     expect(headers['content-security-policy']).toContain("frame-ancestors 'none'")
     expect(headers['content-security-policy']).toContain("object-src 'none'")
   })
+
+  it('keeps test assets out of attachment route traces', () => {
+    expect(nextConfig.outputFileTracingExcludes?.['/api/v1/attachments/*']).toContain('./tests/**/*')
+    expect(nextConfig.outputFileTracingExcludes?.['/api/v1/issues/*/attachments']).toContain('./tests/**/*')
+  })
 })

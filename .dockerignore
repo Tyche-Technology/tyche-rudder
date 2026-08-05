@@ -1,6 +1,7 @@
 node_modules
 .next
 coverage
+.rudder-objects
 *.tsbuildinfo
 next-env.d.ts
 

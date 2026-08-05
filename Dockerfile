@@ -53,8 +53,10 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=deps /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 COPY --from=deps /app/node_modules/postgres ./node_modules/postgres
 
-# prerender/ISR cache dir must be writable by the non-root user
-RUN mkdir .next && chown node:node .next
+# Runtime cache and the optional filesystem object store must be writable by
+# the non-root user. Mount persistent storage at /app/.rudder-objects when
+# OBJECT_STORE_BACKEND=fs.
+RUN mkdir .next .rudder-objects && chown node:node .next .rudder-objects
 
 COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static

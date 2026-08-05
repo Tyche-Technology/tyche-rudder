@@ -9,7 +9,7 @@ export default defineConfig({
     // test tree — their `session-live` copies then fight over port 3101 and the
     // :5434 container, and their stale fixtures run against THIS tree's modules.
     // Both surface as unexplained failures rather than a clear error.
-    exclude: [...configDefaults.exclude, '.worktrees/**'],
+    exclude: [...configDefaults.exclude, '.worktrees/**', '.next/**'],
     // Default 10s hookTimeout is too tight for beforeAll hooks that boot a
     // PGlite (Postgres-as-WASM) instance and run the full Drizzle migration;
     // that boot can exceed 10s under CPU contention, killing the hook and
