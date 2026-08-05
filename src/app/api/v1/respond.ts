@@ -85,7 +85,7 @@ export function failParse(error: ZodError): NextResponse {
 }
 
 // postgres-js surfaces the Postgres SQLSTATE on `.code` (verified against a
-// real postgres:15 container, not PGlite — see task-5-report.md). Only
+// real postgres:15 container, not PGlite). Only
 // 23505 (unique_violation) is unique-constraint; anything else is a
 // different failure and callers must rethrow it, not swallow it here.
 export function isUniqueViolation(e: unknown): boolean {

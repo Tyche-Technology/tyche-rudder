@@ -28,8 +28,6 @@ const attachmentTraceExcludes = [
   './vitest.config.ts',
 ]
 
-const storageEmulatorPolicy = process.env.RUDDER_E2E_BUILD === '1' ? 'allow' : 'deny'
-
 const nextConfig: NextConfig = {
   // standalone: production Docker image copies .next/standalone instead of
   // the full node_modules tree — Next traces the runtime dependency subset.
@@ -57,7 +55,6 @@ const nextConfig: NextConfig = {
     '/api/v1/attachments/*': attachmentTraceExcludes,
     '/api/v1/issues/*/attachments': attachmentTraceExcludes,
   },
-  env: { RUDDER_STORAGE_EMULATOR_POLICY: storageEmulatorPolicy },
   poweredByHeader: false,
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]

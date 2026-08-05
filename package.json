@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run --exclude 'tests/e2e/**'",
-    "pretest:e2e": "RUDDER_E2E_BUILD=1 next build",
+    "pretest:e2e": "next build",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",

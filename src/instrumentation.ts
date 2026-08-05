@@ -28,7 +28,7 @@ process.on('unhandledRejection', (reason) => {
 // background 500 instead of crashing. Confirmed against the actual
 // generated server.js (not just `next start`), and confirmed a second time
 // against this exact route set (GET /api/v1/products returns a normal 401
-// with a bad secret, no crash) — see task-10-report.md, fix round 2.
+// with a bad secret, no crash).
 //
 // The real production guarantees live elsewhere, specifically because
 // nothing here can be trusted to run before Next starts serving:

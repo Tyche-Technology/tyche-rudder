@@ -78,4 +78,4 @@ The public repository never deploys Tyche infrastructure. It contains the produc
 
 ## Docs
 
-`docs/superpowers/` holds public specs, design notes, and reviews. The PRD (`specs/2026-07-30-issue-tracker-design.md`) is binding — §7 naming rules, §10 AI guardrails. `design/index.html` is the living style guide.
+`docs/superpowers/` holds public specs and design notes. The PRD (`specs/2026-07-30-issue-tracker-design.md`) is binding — §7 naming rules, §10 AI guardrails. `design/index.html` is the living style guide.

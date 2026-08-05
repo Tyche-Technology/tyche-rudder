@@ -1,7 +1,7 @@
+import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { createHash } from 'node:crypto'
 import { Storage } from '@google-cloud/storage'
 
 export type ObjectStore = {
@@ -10,19 +10,15 @@ export type ObjectStore = {
   delete(object: string): Promise<void>
 }
 
-let cached: ObjectStore | null = null
-const storageEmulatorAllowed = process.env.RUDDER_STORAGE_EMULATOR_POLICY === 'allow'
+let cached: { config: string; store: ObjectStore } | null = null
 
 const OBJECT_KEY = /^issues\/[1-9]\d*\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function localFsDirectory(): string {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('object-store: filesystem backend is disabled in production')
-  }
   if (process.env.NODE_ENV === 'test') {
     return path.join(process.cwd(), '.rudder-objects', `test-${process.pid}`)
   }
-  return path.join(process.cwd(), '.rudder-objects', 'dev')
+  return path.join(process.cwd(), '.rudder-objects', process.env.NODE_ENV === 'production' ? 'production' : 'dev')
 }
 
 function localFsPath(dir: string, object: string): string {
@@ -38,41 +34,49 @@ async function prepareFsDirectory(dir: string): Promise<void> {
 
 // Tests inject a fake here (tests/helpers/db.ts pattern, same as __rudderTestDb).
 export function getObjectStore(): ObjectStore {
-  if (process.env.NODE_ENV === 'production' && process.env.STORAGE_EMULATOR_HOST && !storageEmulatorAllowed) {
+  if (process.env.NODE_ENV === 'production' && process.env.STORAGE_EMULATOR_HOST) {
     throw new Error('object-store: STORAGE_EMULATOR_HOST is forbidden in production')
   }
   if (process.env.NODE_ENV === 'test') {
     const testStore = (globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore
     if (testStore) return testStore
   }
-  if (!cached) {
-    const bucketName = process.env.GCS_BUCKET
-    if (!bucketName) throw new Error('GCS_BUCKET not configured')
-    if (bucketName === 'fs') {
-      const dir = localFsDirectory()
-      cached = {
-        async save(object, data) {
-          await prepareFsDirectory(dir)
-          await fs.writeFile(localFsPath(dir, object), data, { flag: 'wx', mode: 0o600 })
-        },
-        async read(object) {
-          await prepareFsDirectory(dir)
-          const handle = await fs.open(localFsPath(dir, object), constants.O_RDONLY | constants.O_NOFOLLOW)
-          try { return await handle.readFile() } finally { await handle.close() }
-        },
-        async delete(object) {
-          await prepareFsDirectory(dir)
-          await fs.rm(localFsPath(dir, object), { force: true })
-        },
-      }
-    } else {
-      const bucket = new Storage().bucket(bucketName)
-      cached = {
-        async save(object, data, contentType) { await bucket.file(object).save(data, { contentType }) },
-        async read(object) { const [buf] = await bucket.file(object).download(); return buf },
-        async delete(object) { await bucket.file(object).delete({ ignoreNotFound: true }) },
-      }
+  const backend = process.env.OBJECT_STORE_BACKEND ?? 'fs'
+  if (backend !== 'fs' && backend !== 'gcs') throw new Error('OBJECT_STORE_BACKEND must be "fs" or "gcs"')
+
+  if (backend === 'fs') {
+    const dir = localFsDirectory()
+    const config = `fs:${dir}`
+    if (cached?.config === config) return cached.store
+    const store: ObjectStore = {
+      async save(object, data) {
+        await prepareFsDirectory(dir)
+        await fs.writeFile(localFsPath(dir, object), data, { flag: 'wx', mode: 0o600 })
+      },
+      async read(object) {
+        await prepareFsDirectory(dir)
+        const handle = await fs.open(localFsPath(dir, object), constants.O_RDONLY | constants.O_NOFOLLOW)
+        try { return await handle.readFile() } finally { await handle.close() }
+      },
+      async delete(object) {
+        await prepareFsDirectory(dir)
+        await fs.rm(localFsPath(dir, object), { force: true })
+      },
     }
+    cached = { config, store }
+    return store
   }
-  return cached
+
+  const bucketName = process.env.GCS_BUCKET
+  if (!bucketName) throw new Error('GCS_BUCKET not configured')
+  const config = `gcs:${bucketName}`
+  if (cached?.config === config) return cached.store
+  const bucket = new Storage().bucket(bucketName)
+  const store: ObjectStore = {
+    async save(object, data, contentType) { await bucket.file(object).save(data, { contentType }) },
+    async read(object) { const [buf] = await bucket.file(object).download(); return buf },
+    async delete(object) { await bucket.file(object).delete({ ignoreNotFound: true }) },
+  }
+  cached = { config, store }
+  return store
 }

@@ -110,8 +110,8 @@ on status change of their issue.
 - **Design**: the design system is delegated to Claude via the
   `frontend-design` skill — see Appendix A for the delegation prompt.
 - **Tech stack**: intentionally not fixed in this PRD; decided at the
-  implementation-planning stage. Reuse of existing Tyche GCP infrastructure
-  stays on the table.
+  implementation-planning stage. Deployment infrastructure is selected by
+  each operator; no organization-specific provider is assumed.
 
 ## 8. Non-goals
 

@@ -125,13 +125,12 @@ npm run coverage:gate         # >=80% coverage for src/domain, src/lib, and src/
 ```
 
 Run browser journeys separately against real Postgres 15 and the production
-build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299, a
-localhost GCS-compatible server on port 3300, migrations, seeding, and cleanup.
-An E2E-only Node preload redirects Slack, while object operations use the real
-Storage SDK path. Only the E2E build compiles an emulator-allow policy; regular
-production builds compile a fixed deny policy. Both `getObjectStore()` and the
-Docker entrypoint reject `STORAGE_EMULATOR_HOST` in production, and standalone/
-Docker artifacts exclude the test suites, hooks, and Playwright configuration.
+build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299,
+migrations, seeding, and cleanup. An E2E-only Node preload redirects Slack,
+while attachments use and clean up the production filesystem backend. Both
+`getObjectStore()` and the Docker entrypoint reject `STORAGE_EMULATOR_HOST` in
+production, and standalone/Docker artifacts exclude the test suites, hooks,
+and Playwright configuration.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P
@@ -246,7 +245,7 @@ effect immediately instead of waiting for a cookie to expire.
 ## Deploy
 
 This public repository does not deploy to Tyche infrastructure. Organization-
-specific GitHub Actions, VM/Cloud SQL compose configuration, runbooks, and
+specific deployment workflows, infrastructure configuration, runbooks, and
 repository secrets live only in a separate private repository. This repository
 runs validation and security automation only.
 
@@ -261,8 +260,12 @@ runs validation and security automation only.
   emulator configuration.
 - `scripts/migrate.mjs`: applies migrations with runtime dependencies only,
   without adding the `drizzle-kit` development dependency to the image. Real
-  operators must inject database, authentication, Slack, and GCS configuration
+  operators must inject database, authentication, and Slack configuration
   through their own secret-management layer.
+- Set attachment storage explicitly with `OBJECT_STORE_BACKEND=fs` or `gcs`.
+  The filesystem backend writes under `.rudder-objects/production`; Docker
+  operators must mount persistent writable storage at `/app/.rudder-objects`.
+  The GCS backend requires `GCS_BUCKET` and Application Default Credentials.
 
 ## Docs
 

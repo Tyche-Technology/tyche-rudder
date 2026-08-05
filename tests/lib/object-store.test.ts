@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto'
 import { getObjectStore, type ObjectStore } from '@/lib/object-store'
 
 let tmpDir: string
+let productionDir: string
 const objectKey = 'issues/1/00000000-0000-4000-8000-000000000001'
 
 function flatPath(key: string): string {
@@ -18,24 +19,32 @@ async function createStoredSymlink(key: string, target: string): Promise<void> {
 
 beforeAll(async () => {
   tmpDir = path.resolve('.rudder-objects', `test-${process.pid}`)
+  productionDir = path.resolve('.rudder-objects', 'production')
   await fs.rm(tmpDir, { recursive: true, force: true })
+  await fs.rm(productionDir, { recursive: true, force: true })
   await fs.mkdir(tmpDir, { recursive: true })
-  process.env.GCS_BUCKET = 'fs'
+  process.env.OBJECT_STORE_BACKEND = 'fs'
 })
 
 afterAll(async () => {
-  delete process.env.GCS_BUCKET
+  delete process.env.OBJECT_STORE_BACKEND
   await fs.rm(tmpDir, { recursive: true, force: true })
+  await fs.rm(productionDir, { recursive: true, force: true })
 })
 
 describe('getObjectStore (fs: backend, real disk — not the fake test store)', () => {
-  it('rejects the filesystem backend in production even when a test flag is present', () => {
+  it('round-trips bytes through the explicit production filesystem backend', async () => {
+    const productionKey = 'issues/9/00000000-0000-4000-8000-000000000009'
     vi.stubEnv('NODE_ENV', 'production')
-    vi.stubEnv('RUDDER_E2E', 'true')
+    vi.stubEnv('OBJECT_STORE_BACKEND', 'fs')
     try {
-      expect(() => getObjectStore()).toThrow(/filesystem backend is disabled in production/)
+      const store = getObjectStore()
+      await store.save(productionKey, Buffer.from('production bytes'), 'text/plain')
+      expect((await store.read(productionKey)).toString()).toBe('production bytes')
+      await store.delete(productionKey)
     } finally {
       vi.unstubAllEnvs()
+      await fs.rm(productionDir, { recursive: true, force: true })
     }
   })
 
@@ -47,6 +56,7 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
     }
     ;(globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore = injected
     vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('OBJECT_STORE_BACKEND', 'gcs')
     vi.stubEnv('GCS_BUCKET', '')
     try {
       expect(() => getObjectStore()).toThrow(/GCS_BUCKET not configured/)
@@ -62,6 +72,15 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
     vi.stubEnv('STORAGE_EMULATOR_HOST', 'http://127.0.0.1:3300')
     try {
       expect(() => getObjectStore()).toThrow(/STORAGE_EMULATOR_HOST is forbidden in production/)
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('rejects an unknown object-store backend', () => {
+    vi.stubEnv('OBJECT_STORE_BACKEND', 's3')
+    try {
+      expect(() => getObjectStore()).toThrow(/OBJECT_STORE_BACKEND must be "fs" or "gcs"/)
     } finally {
       vi.unstubAllEnvs()
     }

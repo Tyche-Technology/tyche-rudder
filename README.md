@@ -121,13 +121,11 @@ npm run coverage:gate         # src/domain + src/lib + src/ui 커버리지 ≥80
 ```
 
 실제 Postgres 15와 production build를 지나는 브라우저 여정은 별도로 실행한다.
-E2E harness가 Postgres(:5435), mock Slack(:3299), localhost GCS 호환 서버(:3300)를
-띄우고 migration·seed·정리를 소유한다. E2E 전용 Node preload는 Slack만 리디렉션하고
-객체 저장은 실제 Storage SDK 경로를 지난다. 로컬 GCS 서버가 필요한 web process만
-E2E build 시점에만 에뮬레이터 허용 정책을 컴파일한다. 일반 production build에는
-거부 정책이 고정되고, 앱의 `getObjectStore()`와 Docker entrypoint가 모두
-`STORAGE_EMULATOR_HOST`를 거부한다. standalone 산출물과 Docker 이미지에는 테스트
-suite·hook·Playwright 설정이 들어가지 않는다.
+E2E harness가 Postgres(:5435), mock Slack(:3299), migration·seed·정리를 소유한다.
+E2E 전용 Node preload는 Slack만 리디렉션하고, 첨부파일은 production filesystem
+backend를 실제로 사용한 뒤 정리한다. 앱의 `getObjectStore()`와 Docker entrypoint는
+모두 production의 `STORAGE_EMULATOR_HOST`를 거부한다. standalone 산출물과 Docker
+이미지에는 테스트 suite·hook·Playwright 설정이 들어가지 않는다.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P
@@ -228,9 +226,9 @@ id-token 로그인 경로(`disableIdTokenSignIn: true`)가 다시 열린다.
 
 ## Deploy
 
-이 공개 저장소는 Tyche 운영 인프라에 배포하지 않는다. 조직 전용 GitHub Actions
-워크플로, VM/Cloud SQL compose 설정, 런북, 저장소 시크릿은 별도의 비공개 저장소에만
-있다. 공개 저장소에서는 검증·보안 자동화만 실행한다.
+이 공개 저장소는 Tyche 운영 인프라에 배포하지 않는다. 조직 전용 배포 워크플로,
+인프라 설정, 런북, 저장소 시크릿은 별도의 비공개 저장소에만 있다. 공개 저장소에서는
+검증·보안 자동화만 실행한다.
 
 - `Dockerfile`: `node:22-alpine` 3단계 빌드(deps → builder → runner), 논루트
   `node` 유저, `output: 'standalone'`. `drizzle-orm`·`postgres`는 standalone
@@ -242,7 +240,11 @@ id-token 로그인 경로(`disableIdTokenSignIn: true`)가 다시 열린다.
   에뮬레이터 설정을 거부한다.
 - `scripts/migrate.mjs`: `drizzle-kit`(devDependency)을 이미지에 넣지 않고
   런타임 의존성만으로 마이그레이션을 적용한다. 실제 운영자는 데이터베이스,
-  인증, Slack, GCS 환경 변수를 자신의 비밀 관리 계층에서 주입해야 한다.
+  인증, Slack 환경 변수를 자신의 비밀 관리 계층에서 주입해야 한다.
+- 첨부파일 저장소는 `OBJECT_STORE_BACKEND=fs` 또는 `gcs`를 명시한다. `fs`는
+  `.rudder-objects/production`을 사용하므로 Docker에서는
+  `/app/.rudder-objects`에 영속·쓰기 가능한 볼륨을 마운트한다. `gcs`는
+  `GCS_BUCKET`과 Application Default Credentials가 필요하다.
 
 ## Docs
 
