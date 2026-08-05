@@ -66,8 +66,9 @@ applies only to development, however. In the actual Next 16 production server
 `register()` does not reliably terminate the process. `NextServer.prepare()`
 runs `register()` in a fire-and-forget path and swallows its failure as a
 background 500. This was traced in `node_modules/next/dist/server/next.js` and
-reproduced with the actual image built by `docker build`. The deployment
-therefore relies on two safeguards outside Next:
+reproduced with the actual image built by `docker build`. Docker deployments
+therefore use an entrypoint outside Next and expose configuration validity
+through the health endpoint:
 
 - `scripts/docker-entrypoint.sh`: the container `CMD`. It validates both
   `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` before loading Next and never
@@ -76,10 +77,8 @@ therefore relies on two safeguards outside Next:
   `Exited (1)` immediately and leaves the port closed. URL readers normalize
   it through `new URL(value).origin`, so a harmless trailing slash is accepted.
 - `GET /api/health`: this checks configuration validity as well as liveness.
-  The deployment pipeline decides whether to roll back by **polling this
-  endpoint**, not by waiting for the process to exit. See the healthcheck in
-  `deploy/docker-compose.prod.yml` and the wget loop in
-  `.github/workflows/deploy.yml`. This is the effective safety net.
+  Operators can use it for readiness or rollback decisions instead of
+  inferring health from whether the process exited.
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
@@ -129,9 +128,10 @@ Run browser journeys separately against real Postgres 15 and the production
 build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299, a
 localhost GCS-compatible server on port 3300, migrations, seeding, and cleanup.
 An E2E-only Node preload redirects Slack, while object operations use the real
-Storage SDK path. The Docker image excludes both test surfaces, and its
-entrypoint rejects `STORAGE_EMULATOR_HOST`, so production keeps the fixed Slack
-URL and real GCS boundary.
+Storage SDK path. Only the E2E build compiles an emulator-allow policy; regular
+production builds compile a fixed deny policy. Both `getObjectStore()` and the
+Docker entrypoint reject `STORAGE_EMULATOR_HOST` in production, and standalone/
+Docker artifacts exclude the test suites, hooks, and Playwright configuration.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P
@@ -245,21 +245,10 @@ effect immediately instead of waiting for a cookie to expire.
 
 ## Deploy
 
-A push to `master` that changes a relevant path, or a `workflow_dispatch`,
-deploys to the GCP VM `tyche-rudder` in `asia-northeast3-a`. The VM is available
-only on the Tailscale tailnet and has no public IP. It is a VM rather than Cloud
-Run because the Cloud SQL instance `tyche-db` is in the same region and can be
-reached locally through the `cloud-sql-proxy` sidecar. People connect only
-through `tailscale serve`; ts.net terminates TLS, so `Secure` cookies work as
-intended. With no public ingress, login rate limiting was intentionally left
-out of Phase 3.
-
-```
-push(master) -> build & push (GHCR, digest pin)
-             -> migrate.mjs (before container replacement; the old container keeps serving on failure)
-             -> docker compose up -d
-             -> /api/health check -> automatic rollback to the :rollback tag on failure
-```
+This public repository does not deploy to Tyche infrastructure. Organization-
+specific GitHub Actions, VM/Cloud SQL compose configuration, runbooks, and
+repository secrets live only in a separate private repository. This repository
+runs validation and security automation only.
 
 - `Dockerfile`: a three-stage `node:22-alpine` build (deps, builder, runner),
   non-root `node` user, and `output: 'standalone'`. `drizzle-orm` and `postgres`
@@ -268,30 +257,12 @@ push(master) -> build & push (GHCR, digest pin)
   have no dependencies of their own, so copying them is sufficient. `CMD` is
   `scripts/docker-entrypoint.sh`, not `node server.js`; see the
   `BETTER_AUTH_SECRET` section above. It validates `BETTER_AUTH_SECRET` and
-  `BETTER_AUTH_URL` with `sh` before Next starts.
+  `BETTER_AUTH_URL` with `sh` before Next starts and rejects a production GCS
+  emulator configuration.
 - `scripts/migrate.mjs`: applies migrations with runtime dependencies only,
-  without adding the `drizzle-kit` development dependency to the image.
-  Migrations 0004 through 0006 are additive, so a failure does not require a
-  schema rollback. **Migration 0003 is the exception**: it changes
-  `milestones.starts_on` and `ends_on` from `timestamp` to `date` in one
-  direction. The deployment applies migrations before replacing the container,
-  while rollback replaces only the image and leaves the schema in place. After
-  0003, a rollback image still interprets the `date` column's `"YYYY-MM-DD"`
-  string as if it were a `timestamp`. The first deployment has no rollback
-  image and is unaffected, but rollbacks across this boundary from the second
-  deployment onward require an explicit schema decision.
-- `deploy/docker-compose.prod.yml`: two services, `rudder` and
-  `cloud-sql-proxy`. Secrets (`DB_PASSWORD`, `BETTER_AUTH_SECRET`,
-  `BETTER_AUTH_URL`, `SLACK_BOT_TOKEN`, `APP_BASE_URL`, `GCS_BUCKET`, and the
-  optional `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`) are not stored in
-  committed files; they come from the VM environment (`.env`). The service
-  account key is mounted read-only from the VM disk with
-  `./credentials:/credentials:ro`.
-- GitHub Actions secrets: `VM_HOST` (tailnet name `tyche-rudder`),
-  `VM_USERNAME`, `VM_SSH_KEY_BASE64`, `TS_OAUTH_CLIENT_ID`, and
-  `TS_OAUTH_SECRET`.
-- VM, database, bucket, and secret provisioning belongs to a separate runbook
-  (Task 14, executed after PO confirmation).
+  without adding the `drizzle-kit` development dependency to the image. Real
+  operators must inject database, authentication, Slack, and GCS configuration
+  through their own secret-management layer.
 
 ## Docs
 
@@ -299,7 +270,6 @@ push(master) -> build & push (GHCR, digest pin)
 |----------|-------------|
 | `docs/superpowers/specs/2026-07-30-issue-tracker-design.md` | PRD (the naming rules in Section 7 and AI guardrails in Section 10 are binding) |
 | `docs/superpowers/design/2026-07-30-rudder-design-system.md` | Design system specification (tokens, signal flags, timeline rules, and copy deck) |
-| `docs/superpowers/plans/2026-07-30-rudder-overview.md` | Phase overview and carryover items |
 | `design/index.html` | Living style guide (open it in a browser) |
 
 ## License

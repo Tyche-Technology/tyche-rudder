@@ -56,6 +56,17 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
     }
   })
 
+  it('rejects the GCS emulator in production outside the Docker entrypoint', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('GCS_BUCKET', 'production-bucket')
+    vi.stubEnv('STORAGE_EMULATOR_HOST', 'http://127.0.0.1:3300')
+    try {
+      expect(() => getObjectStore()).toThrow(/STORAGE_EMULATOR_HOST is forbidden in production/)
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
   it('round-trips real bytes through the filesystem', async () => {
     const store = getObjectStore()
     const data = Buffer.from('hello attachment bytes')

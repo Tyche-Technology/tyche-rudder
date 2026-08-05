@@ -27,12 +27,9 @@ fi
 # match. Missing BETTER_AUTH_URL doesn't crash the process or fail to bind
 # the port, so unlike a missing secret it would otherwise pass GET
 # /api/health (which only checks the secret) while every state-changing
-# request 401s — a write outage the deploy pipeline's health-poll rollback
-# would never catch. Refusing to exec here means the container never opens
-# the healthcheck port at all, so it fails exactly the same way a bad
-# secret does: compose healthcheck never turns healthy, and the deploy
-# workflow's poll-then-rollback loop (.github/workflows/deploy.yml) catches
-# it without needing a matching change to /api/health itself.
+# request 401s. Refusing to exec here means the container never opens the
+# healthcheck port, so an orchestrator can reject the rollout without a
+# matching change to /api/health itself.
 #
 # This only checks the scheme prefix, not the full shape — e.g. a trailing
 # slash (`https://host/`) passes here. That's deliberate, not a gap: every

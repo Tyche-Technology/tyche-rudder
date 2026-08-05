@@ -11,6 +11,7 @@ export type ObjectStore = {
 }
 
 let cached: ObjectStore | null = null
+const storageEmulatorAllowed = process.env.RUDDER_STORAGE_EMULATOR_POLICY === 'allow'
 
 const OBJECT_KEY = /^issues\/[1-9]\d*\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -37,6 +38,9 @@ async function prepareFsDirectory(dir: string): Promise<void> {
 
 // Tests inject a fake here (tests/helpers/db.ts pattern, same as __rudderTestDb).
 export function getObjectStore(): ObjectStore {
+  if (process.env.NODE_ENV === 'production' && process.env.STORAGE_EMULATOR_HOST && !storageEmulatorAllowed) {
+    throw new Error('object-store: STORAGE_EMULATOR_HOST is forbidden in production')
+  }
   if (process.env.NODE_ENV === 'test') {
     const testStore = (globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore
     if (testStore) return testStore

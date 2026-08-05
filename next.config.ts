@@ -8,6 +8,28 @@ export const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
 ]
 
+const attachmentTraceExcludes = [
+  './.github/**/*',
+  './design/**/*',
+  './deploy/**/*',
+  './docs/**/*',
+  './drizzle/**/*',
+  './scripts/**/*',
+  './src/**/*',
+  './tests/**/*',
+  './*.md',
+  './Dockerfile',
+  './docker-compose.yml',
+  './drizzle.config.ts',
+  './next.config.ts',
+  './package-lock.json',
+  './playwright.config.ts',
+  './tsconfig.json',
+  './vitest.config.ts',
+]
+
+const storageEmulatorPolicy = process.env.RUDDER_E2E_BUILD === '1' ? 'allow' : 'deny'
+
 const nextConfig: NextConfig = {
   // standalone: production Docker image copies .next/standalone instead of
   // the full node_modules tree — Next traces the runtime dependency subset.
@@ -26,6 +48,16 @@ const nextConfig: NextConfig = {
   // flat .next/standalone/server.js the Dockerfile expects — verified in the
   // task-13 build transcript.
   output: 'standalone',
+  // The development-only filesystem object store makes Next's tracer treat
+  // both attachment routes as if they might read the whole project tree.
+  // Runtime code is already bundled; migrations and incident scripts are
+  // copied explicitly by Dockerfile, so these source/test files are not
+  // runtime dependencies.
+  outputFileTracingExcludes: {
+    '/api/v1/attachments/*': attachmentTraceExcludes,
+    '/api/v1/issues/*/attachments': attachmentTraceExcludes,
+  },
+  env: { RUDDER_STORAGE_EMULATOR_POLICY: storageEmulatorPolicy },
   poweredByHeader: false,
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]

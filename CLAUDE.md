@@ -74,8 +74,8 @@ Coverage thresholds are per-slice (`src/domain`, `src/lib`, `src/ui` each ≥80%
 
 ## Deploy
 
-`master` push → GitHub Actions → GHCR image → GCP VM `tyche-rudder` (Tailscale-only, no public IP, cloud-sql-proxy sidecar). Migrations run before the container swap; `/api/health` polling drives automatic rollback — that endpoint checks config validity, not just liveness, and is the real safety net (Next 16's `register()` does NOT reliably kill the prod server; `scripts/docker-entrypoint.sh` validates `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` and rejects `STORAGE_EMULATOR_HOST` before Node loads). Migration 0003 is one-way (`timestamp` → `date`); rollbacks across it need a schema decision. Details: README "Deploy".
+The public repository never deploys Tyche infrastructure. It contains the production `Dockerfile`, but organization-specific workflows, compose files, runbooks, and secrets live only in the private internal repository. `scripts/docker-entrypoint.sh` validates `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` and rejects `STORAGE_EMULATOR_HOST`; `src/lib/object-store.ts` independently enforces the same emulator boundary for non-container production starts. Details: README "Deploy".
 
 ## Docs
 
-`docs/superpowers/` holds specs/plans/reviews. The PRD (`specs/2026-07-30-issue-tracker-design.md`) is binding — §7 naming rules, §10 AI guardrails. `design/index.html` is the living style guide.
+`docs/superpowers/` holds public specs, design notes, and reviews. The PRD (`specs/2026-07-30-issue-tracker-design.md`) is binding — §7 naming rules, §10 AI guardrails. `design/index.html` is the living style guide.
