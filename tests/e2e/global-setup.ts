@@ -1,17 +1,18 @@
 import { spawnSync } from 'node:child_process'
-import { mkdir, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { createServer, type Server, type ServerResponse } from 'node:http'
 import { createConnection } from 'node:net'
 import { join } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { request } from '@playwright/test'
+import { CRC32C } from '@google-cloud/storage'
 import postgres from 'postgres'
 import { z } from 'zod'
 import {
   E2E_BASE_URL,
   E2E_ENV,
-  E2E_ROOT,
+  E2E_GCS_BUCKET,
+  E2E_GCS_URL,
   E2E_USER_SLACK_ID,
   E2E_USERS,
   type SlackCapture,
@@ -19,6 +20,7 @@ import {
 
 const DATABASE_PORT = 5435
 const SLACK_PORT = 3299
+const GCS_PORT = 3300
 const PROJECT_ROOT = process.cwd()
 const slackPostSchema = z.object({ channel: z.string(), text: z.string() })
 const inviteResponseSchema = z.object({ ok: z.literal(true), data: z.object({ inviteUrl: z.url() }) })
@@ -155,6 +157,76 @@ async function startSlackServer(captures: SlackCapture[]): Promise<Server> {
   return server
 }
 
+async function startGcsServer(): Promise<Server> {
+  const objects = new Map<string, { data: Buffer; crc32c: string }>()
+  const server = createServer(async (request, response) => {
+    const url = new URL(request.url ?? '/', E2E_GCS_URL)
+    const sessionPrefix = '/upload/session/'
+    const objectPrefix = `/b/${E2E_GCS_BUCKET}/o/`
+
+    if (request.method === 'POST' && url.pathname === `/upload/storage/v1/b/${E2E_GCS_BUCKET}/o`) {
+      const object = url.searchParams.get('name')
+      if (!object || url.searchParams.get('uploadType') !== 'resumable') {
+        sendJson(response, 400, { error: 'invalid_upload' })
+        return
+      }
+      response.writeHead(200, {
+        'content-type': 'application/json',
+        location: `${E2E_GCS_URL}${sessionPrefix}${encodeURIComponent(object)}`,
+      })
+      response.end('{}')
+      return
+    }
+
+    if (request.method === 'PUT' && url.pathname.startsWith(sessionPrefix)) {
+      const object = decodeURIComponent(url.pathname.slice(sessionPrefix.length))
+      const chunks: Buffer[] = []
+      for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+      const data = Buffer.concat(chunks)
+      const crc32c = new CRC32C()
+      crc32c.update(data)
+      const checksum = crc32c.toString()
+      objects.set(object, { data, crc32c: checksum })
+      sendJson(response, 200, { bucket: E2E_GCS_BUCKET, name: object, size: String(data.length), crc32c: checksum })
+      return
+    }
+
+    if (url.pathname.startsWith(objectPrefix)) {
+      const object = decodeURIComponent(url.pathname.slice(objectPrefix.length))
+      if (request.method === 'GET') {
+        const stored = objects.get(object)
+        if (!stored) {
+          sendJson(response, 404, { error: 'not_found' })
+          return
+        }
+        response.writeHead(200, {
+          'content-type': 'application/octet-stream',
+          'x-goog-hash': `crc32c=${stored.crc32c}`,
+        })
+        response.end(stored.data)
+        return
+      }
+      if (request.method === 'DELETE') {
+        if (!objects.delete(object)) {
+          sendJson(response, 404, { error: 'not_found' })
+          return
+        }
+        response.writeHead(204)
+        response.end()
+        return
+      }
+    }
+
+    sendJson(response, 404, { error: 'not_found' })
+  })
+
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(GCS_PORT, '127.0.0.1', resolve)
+  })
+  return server
+}
+
 async function closeServer(server: Server): Promise<void> {
   if (!server.listening) return
   server.closeAllConnections()
@@ -165,22 +237,21 @@ async function closeServer(server: Server): Promise<void> {
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
   if (await portIsOpen(SLACK_PORT)) throw new Error(`port ${SLACK_PORT} is already in use`)
+  if (await portIsOpen(GCS_PORT)) throw new Error(`port ${GCS_PORT} is already in use`)
   const databaseAlreadyRunning = await portIsOpen(DATABASE_PORT)
   if (databaseAlreadyRunning && !process.env.CI) {
     throw new Error(`port ${DATABASE_PORT} is already in use`)
   }
 
-  await rm(E2E_ROOT, { recursive: true, force: true })
-  await mkdir(E2E_ROOT, { recursive: true })
-
   const containerName = `rudder-e2e-t12-${process.pid}`
   let startedDatabase = false
   let slackServer: Server | null = null
+  let gcsServer: Server | null = null
 
   async function cleanup(): Promise<void> {
     if (slackServer) await closeServer(slackServer)
+    if (gcsServer) await closeServer(gcsServer)
     if (startedDatabase) run('docker', ['stop', containerName])
-    await rm(E2E_ROOT, { recursive: true, force: true })
   }
 
   try {
@@ -215,6 +286,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     await sql.end()
 
     const captures: SlackCapture[] = []
+    gcsServer = await startGcsServer()
     slackServer = await startSlackServer(captures)
     return cleanup
   } catch (error) {

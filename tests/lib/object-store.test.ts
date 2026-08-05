@@ -3,7 +3,7 @@ import path from 'node:path'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import { createHash } from 'node:crypto'
-import { getObjectStore } from '@/lib/object-store'
+import { getObjectStore, type ObjectStore } from '@/lib/object-store'
 
 let tmpDir: string
 const objectKey = 'issues/1/00000000-0000-4000-8000-000000000001'
@@ -35,6 +35,23 @@ describe('getObjectStore (fs: backend, real disk — not the fake test store)', 
     try {
       expect(() => getObjectStore()).toThrow(/filesystem backend is disabled in production/)
     } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('ignores an injected test store in production', () => {
+    const injected: ObjectStore = {
+      async save() {},
+      async read() { return Buffer.from('bypass') },
+      async delete() {},
+    }
+    ;(globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore = injected
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('GCS_BUCKET', '')
+    try {
+      expect(() => getObjectStore()).toThrow(/GCS_BUCKET not configured/)
+    } finally {
+      delete (globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore
       vi.unstubAllEnvs()
     }
   })

@@ -123,9 +123,11 @@ npm run coverage:gate         # src/domain + src/lib + src/ui 커버리지 ≥80
 ```
 
 실제 Postgres 15와 production build를 지나는 브라우저 여정은 별도로 실행한다.
-E2E harness가 Postgres(:5435)와 mock Slack(:3299)을 띄우고 migration·seed·정리를
-소유한다. Slack 리디렉션과 객체 저장소는 Docker 이미지에서 제외되는 E2E 전용
-Node preload가 주입하므로 production 코드는 고정 Slack URL과 GCS 경계만 가진다.
+E2E harness가 Postgres(:5435), mock Slack(:3299), localhost GCS 호환 서버(:3300)를
+띄우고 migration·seed·정리를 소유한다. E2E 전용 Node preload는 Slack만 리디렉션하고
+객체 저장은 실제 Storage SDK 경로를 지난다. Docker 이미지는 두 테스트 표면을
+제외하며 entrypoint가 `STORAGE_EMULATOR_HOST`를 거부하므로 production은 고정 Slack
+URL과 실제 GCS 경계만 가진다.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P

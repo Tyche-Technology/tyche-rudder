@@ -38,34 +38,43 @@ Only the two font-loading lines intentionally differ.
 ```bash
 npm install
 docker compose up -d          # Postgres 15, default port 5432
-cp .env.example .env.local    # DATABASE_URL, SESSION_SECRET
+cp .env.example .env.local    # DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL
 npm run db:migrate
 SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... SEED_ADMIN_NAME=... npm run seed:admin
                               # Creates the first admin only. Add later users by invitation.
 npm run dev                   # http://localhost:3000
 ```
 
-You **must generate your own** `SESSION_SECRET`. `.env.example` deliberately
-leaves it blank, and the old placeholder value is rejected: anyone who knows
-the repository could otherwise forge a valid cookie for an arbitrary user ID.
-The value must be at least 32 characters long, as required by iron-session.
+You **must generate your own** `BETTER_AUTH_SECRET`. `.env.example` deliberately
+contains a rejected placeholder: anyone who knows a shared value could
+otherwise forge a valid session for an arbitrary user ID. The value must be at
+least 32 characters long, matching better-auth's entropy requirement.
 
-`register()` in `src/instrumentation.ts` validates this value **at startup**.
-During `npm run dev`, the process exits immediately if the value is missing, is
-the placeholder, or is shorter than 32 characters. This guarantee applies only
-to development, however. In the actual Next 16 production server (`next start`
-or the standalone `server.js` deployed by this project), an exception from
+Set `BETTER_AUTH_URL` to the browser-facing origin as well. The trusted-origin
+guard in `src/lib/api-auth.ts` uses it as its trust root. This project builds
+with `output: "standalone"` and does not enable
+`experimental.trustHostHeader`, so leaving it unset makes the guard fall back
+to the server's bind origin (`HOSTNAME`/`PORT`). That never matches the real
+browser Origin, and every cookie-bearing state-changing request is rejected
+with 401.
+
+`register()` in `src/instrumentation.ts` validates `BETTER_AUTH_SECRET` **at
+startup**. During `npm run dev`, the process exits immediately if the value is
+missing, is the placeholder, or is shorter than 32 characters. This guarantee
+applies only to development, however. In the actual Next 16 production server
+(`next start` or the standalone `server.js` deployed by this project), an exception from
 `register()` does not reliably terminate the process. `NextServer.prepare()`
 runs `register()` in a fire-and-forget path and swallows its failure as a
 background 500. This was traced in `node_modules/next/dist/server/next.js` and
 reproduced with the actual image built by `docker build`. The deployment
 therefore relies on two safeguards outside Next:
 
-- `scripts/docker-entrypoint.sh`: the container `CMD`. It validates
-  `SESSION_SECRET` before loading Next and never starts `node server.js` if
-  validation fails. Direct `docker run` reproduction confirmed that an invalid
-  secret makes the container reach `Exited (1)` immediately and leaves the
-  port closed.
+- `scripts/docker-entrypoint.sh`: the container `CMD`. It validates both
+  `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` before loading Next and never
+  starts `node server.js` if either is invalid. Direct `docker run`
+  reproduction confirmed that an invalid secret makes the container reach
+  `Exited (1)` immediately and leaves the port closed. URL readers normalize
+  it through `new URL(value).origin`, so a harmless trailing slash is accepted.
 - `GET /api/health`: this checks configuration validity as well as liveness.
   The deployment pipeline decides whether to roll back by **polling this
   endpoint**, not by waiting for the process to exit. See the healthcheck in
@@ -117,10 +126,12 @@ npm run coverage:gate         # >=80% coverage for src/domain, src/lib, and src/
 ```
 
 Run browser journeys separately against real Postgres 15 and the production
-build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299,
-migrations, seeding, and cleanup. An E2E-only Node preload excluded from the
-Docker image injects Slack redirection and object storage, so production code
-keeps only the fixed Slack URL and GCS boundary.
+build. The E2E harness owns Postgres on port 5435, mock Slack on port 3299, a
+localhost GCS-compatible server on port 3300, migrations, seeding, and cleanup.
+An E2E-only Node preload redirects Slack, while object operations use the real
+Storage SDK path. The Docker image excludes both test surfaces, and its
+entrypoint rejects `STORAGE_EMULATOR_HOST`, so production keeps the fixed Slack
+URL and real GCS boundary.
 
 ```bash
 lsof -iTCP:3200 -sTCP:LISTEN -P
@@ -208,15 +219,29 @@ regression.
 
 ## Auth
 
-Humans use iron-session cookies; agents use `Bearer rud_*` tokens.
+Humans sign in with invite-based email/password or optional Google OAuth.
+Agents continue to use `Bearer rud_*` tokens; that path did not change in the
+better-auth migration.
 
 ```bash
 npm run create-token <name>   # Issue an agent token
+npm run revoke-token <name>   # Revoke an agent token (revoked_at; production uses scripts/revoke-token.mjs)
 ```
 
-Sessions are stateless and sealed inside the cookie, so there is no server-side
-revocation mechanism. Logging out expires the client cookie, but a cookie
-stolen before logout remains valid until its expiration time.
+There is no self-service signup. Bootstrap the first admin with
+`npm run seed:admin` (`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, and
+`SEED_ADMIN_NAME`), then invite later users from the **Crew** page (`/crew`).
+Invites are single-use and expire after seven days. `disableImplicitSignUp`
+also prevents an uninvited Google account from creating a user; Google may only
+link to an existing invited email. Configure the OAuth redirect URI as exactly
+`<BETTER_AUTH_URL>/api/auth/callback/google` and leave Authorized JavaScript
+Origins empty, because `disableIdTokenSignIn: true` deliberately closes that
+alternate login path.
+
+Sessions are DB-backed rather than stateless. `src/lib/api-auth.ts` deliberately
+does not enable better-auth's cookie cache, so role and banned status are read
+from the database on every request. Demoting or banning a user therefore takes
+effect immediately instead of waiting for a cookie to expire.
 
 ## Deploy
 
@@ -242,8 +267,8 @@ push(master) -> build & push (GHCR, digest pin)
   misses them: the build graph does not include `migrate.mjs`. Both packages
   have no dependencies of their own, so copying them is sufficient. `CMD` is
   `scripts/docker-entrypoint.sh`, not `node server.js`; see the
-  `SESSION_SECRET` section above. It validates configuration with `sh` before
-  Next starts.
+  `BETTER_AUTH_SECRET` section above. It validates `BETTER_AUTH_SECRET` and
+  `BETTER_AUTH_URL` with `sh` before Next starts.
 - `scripts/migrate.mjs`: applies migrations with runtime dependencies only,
   without adding the `drizzle-kit` development dependency to the image.
   Migrations 0004 through 0006 are additive, so a failure does not require a
@@ -256,8 +281,9 @@ push(master) -> build & push (GHCR, digest pin)
   image and is unaffected, but rollbacks across this boundary from the second
   deployment onward require an explicit schema decision.
 - `deploy/docker-compose.prod.yml`: two services, `rudder` and
-  `cloud-sql-proxy`. Secrets (`DB_PASSWORD`, `SESSION_SECRET`,
-  `SLACK_BOT_TOKEN`, `APP_BASE_URL`, and `GCS_BUCKET`) are not stored in
+  `cloud-sql-proxy`. Secrets (`DB_PASSWORD`, `BETTER_AUTH_SECRET`,
+  `BETTER_AUTH_URL`, `SLACK_BOT_TOKEN`, `APP_BASE_URL`, `GCS_BUCKET`, and the
+  optional `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`) are not stored in
   committed files; they come from the VM environment (`.env`). The service
   account key is mounted read-only from the VM disk with
   `./credentials:/credentials:ro`.

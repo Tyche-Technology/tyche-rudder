@@ -51,4 +51,9 @@ case "${BETTER_AUTH_URL:-}" in
     ;;
 esac
 
+if [ -n "${STORAGE_EMULATOR_HOST:-}" ]; then
+  echo "STORAGE_EMULATOR_HOST is forbidden in production - refusing to start" >&2
+  exit 1
+fi
+
 exec node server.js

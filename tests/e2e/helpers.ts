@@ -1,12 +1,11 @@
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { expect, type APIRequestContext, type APIResponse, type Page } from '@playwright/test'
 import { z } from 'zod'
 
 export const E2E_BASE_URL = 'http://127.0.0.1:3200'
 export const E2E_SLACK_URL = 'http://127.0.0.1:3299'
-export const E2E_ROOT = join(tmpdir(), 'rudder-e2e-t12')
+export const E2E_GCS_URL = 'http://127.0.0.1:3300'
+export const E2E_GCS_BUCKET = 'rudder-e2e'
 export const E2E_CHANNEL = 'C_E2E_CHANNEL'
 // Must be a real Slack user-id shape (U/W + uppercase alnum) — src/lib/slack.ts
 // refuses to DM anything else, so an underscore here silently kills the
@@ -37,6 +36,8 @@ export const E2E_ENV = {
   SLACK_BOT_TOKEN: 'e2e',
   SLACK_CHANNEL_ID: E2E_CHANNEL,
   APP_BASE_URL: E2E_BASE_URL,
+  GCS_BUCKET: E2E_GCS_BUCKET,
+  STORAGE_EMULATOR_HOST: E2E_GCS_URL,
   NEXT_TELEMETRY_DISABLED: '1',
 } as const
 

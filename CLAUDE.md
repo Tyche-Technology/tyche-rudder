@@ -32,7 +32,7 @@ There is no lint script.
 - User-facing copy is Korean; enum/API values, identifiers, and committed docs are English.
 - Tests: `*.test.ts(x)` for vitest, grouped by layer under `tests/{domain,api,lib,ui}`; `*.spec.ts` for Playwright under `tests/e2e`. Add coverage beside the affected layer.
 - Commits: conventional prefixes (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`), imperative and focused. PRs explain behavior changes, link the spec/issue, list verification commands, include screenshots for visible UI changes, and call out migrations and env changes explicitly.
-- Secrets: copy `.env.example` to `.env.local`; generate your own `SESSION_SECRET` (≥32 chars, see README). Never put credentials or production data in fixtures, logs, screenshots, or docs.
+- Secrets: copy `.env.example` to `.env.local`; generate your own `BETTER_AUTH_SECRET` (≥32 chars) and set `BETTER_AUTH_URL` to the browser-facing origin (see README). Never put credentials or production data in fixtures, logs, screenshots, or docs.
 
 Dev-server rules (README "dev 서버는 한 번에 하나만"): Next 16 takes a per-project dev lock — a second `next dev` dies with an error that is invisible when stdio is discarded, so verify the port, not `pgrep`. `tests/api/session-live.test.ts` boots its own dev server (:3101) and Postgres container (:5434); never run a dev server while it runs. In parallel worktrees, scope vitest with `--dir tests` or worktree copies of session-live fight over ports.
 
@@ -53,7 +53,7 @@ design/**           approved mockups + token source (rudder.css)
 - Domain functions return `DomainError` with `kind: 'not_found' | 'conflict' | 'rule'` (`src/domain/result.ts`); routes never infer status codes from message text. Errors are wrapped by `src/lib/with-error-envelope.ts`.
 - The status machine lives in `src/domain/transitions.ts`: backlog entry requires a priority, rejected/on_hold require a reason, rejected is terminal.
 - Optimistic locking uses an explicit `version` column — never timestamp comparison (timestamps burned us: see Testing).
-- Auth: humans get a stateless iron-session cookie; agents send `Bearer rud_*` (sha256 hash stored). Role is always re-read from the DB, never trusted from the cookie (`src/lib/api-auth.ts`). An auth redesign to better-auth is in flight — see `docs/superpowers/specs/2026-08-04-auth-redesign-design.md`.
+- Auth: humans use better-auth DB-backed sessions after invite-based email/password or optional Google login; agents send `Bearer rud_*` (sha256 hash stored). Role and banned status are re-read from the DB on every request (`src/lib/api-auth.ts` deliberately has no cookie cache), so account changes take effect immediately. Self-service signup is disabled; bootstrap the first admin with `npm run seed:admin`, then invite users from `/crew`.
 - CSS tokens: `design/rudder.css` is the source, `src/app/globals.css` is its copy. Every style change goes into BOTH files identically (only the two font-loading lines differ).
 - `@/` aliases `src/` (tsconfig + vitest).
 
@@ -74,7 +74,7 @@ Coverage thresholds are per-slice (`src/domain`, `src/lib`, `src/ui` each ≥80%
 
 ## Deploy
 
-`master` push → GitHub Actions → GHCR image → GCP VM `tyche-rudder` (Tailscale-only, no public IP, cloud-sql-proxy sidecar). Migrations run before the container swap; `/api/health` polling drives automatic rollback — that endpoint checks config validity, not just liveness, and is the real safety net (Next 16's `register()` does NOT reliably kill the prod server; `scripts/docker-entrypoint.sh` validates `SESSION_SECRET` before Node loads). Migration 0003 is one-way (`timestamp` → `date`); rollbacks across it need a schema decision. Details: README "Deploy".
+`master` push → GitHub Actions → GHCR image → GCP VM `tyche-rudder` (Tailscale-only, no public IP, cloud-sql-proxy sidecar). Migrations run before the container swap; `/api/health` polling drives automatic rollback — that endpoint checks config validity, not just liveness, and is the real safety net (Next 16's `register()` does NOT reliably kill the prod server; `scripts/docker-entrypoint.sh` validates `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` and rejects `STORAGE_EMULATOR_HOST` before Node loads). Migration 0003 is one-way (`timestamp` → `date`); rollbacks across it need a schema decision. Details: README "Deploy".
 
 ## Docs
 

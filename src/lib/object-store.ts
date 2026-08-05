@@ -37,8 +37,10 @@ async function prepareFsDirectory(dir: string): Promise<void> {
 
 // Tests inject a fake here (tests/helpers/db.ts pattern, same as __rudderTestDb).
 export function getObjectStore(): ObjectStore {
-  const testStore = (globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore
-  if (testStore) return testStore
+  if (process.env.NODE_ENV === 'test') {
+    const testStore = (globalThis as { __rudderTestStore?: ObjectStore }).__rudderTestStore
+    if (testStore) return testStore
+  }
   if (!cached) {
     const bucketName = process.env.GCS_BUCKET
     if (!bucketName) throw new Error('GCS_BUCKET not configured')
