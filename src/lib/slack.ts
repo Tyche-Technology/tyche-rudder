@@ -13,8 +13,10 @@ async function post(channel: string, text: string): Promise<void> {
   const token = process.env.SLACK_BOT_TOKEN
   if (!token) return // notifications are optional wiring, never a failure path
   try {
-    const base = process.env.SLACK_API_BASE ?? 'https://slack.com/api'
-    const res = await fetch(`${base}/chat.postMessage`, {
+    const endpoint = process.env.RUDDER_E2E === 'true'
+      ? 'http://127.0.0.1:3299/chat.postMessage'
+      : 'https://slack.com/api/chat.postMessage'
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ channel, text }),

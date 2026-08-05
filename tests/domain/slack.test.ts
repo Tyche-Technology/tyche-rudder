@@ -4,7 +4,7 @@ import type { Db } from '@/db/client'
 import type { Issue } from '@/db/schema'
 import { notifyNewIssue, notifyStatusChange } from '@/lib/slack'
 
-const ENV_KEYS = ['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID', 'APP_BASE_URL', 'SLACK_API_BASE'] as const
+const ENV_KEYS = ['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID', 'APP_BASE_URL', 'SLACK_API_BASE', 'RUDDER_E2E'] as const
 const saved: Partial<Record<(typeof ENV_KEYS)[number], string>> = {}
 
 function fakeIssue(overrides: Partial<Issue> = {}): Issue {
@@ -25,7 +25,8 @@ function tick() {
 beforeEach(() => {
   for (const k of ENV_KEYS) saved[k] = process.env[k]
   process.env.SLACK_BOT_TOKEN = 'xoxb-test-token'
-  process.env.SLACK_API_BASE = 'http://slack.test/api'
+  process.env.SLACK_API_BASE = 'https://attacker.example/api'
+  delete process.env.RUDDER_E2E
   process.env.APP_BASE_URL = 'http://rudder.test'
   process.env.SLACK_CHANNEL_ID = 'C_TEST_CHANNEL'
 })
@@ -40,14 +41,14 @@ afterEach(() => {
 })
 
 describe('notifyNewIssue', () => {
-  it('posts to chat.postMessage with the configured channel and #id/title/url text', async () => {
+  it('posts only to Slack\'s fixed endpoint with the configured channel and #id/title/url text', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ json: async () => ({ ok: true }) })
     vi.stubGlobal('fetch', fetchMock)
     notifyNewIssue(fakeIssue({ id: 7, title: '통관 지연' }))
     await tick()
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, opts] = fetchMock.mock.calls[0]
-    expect(url).toBe('http://slack.test/api/chat.postMessage')
+    expect(url).toBe('https://slack.com/api/chat.postMessage')
     expect(opts.headers.authorization).toBe('Bearer xoxb-test-token')
     const body = JSON.parse(opts.body)
     expect(body.channel).toBe('C_TEST_CHANNEL')

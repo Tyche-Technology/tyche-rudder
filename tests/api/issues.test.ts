@@ -628,13 +628,14 @@ describe('POST /api/v1/issues/:id/transition', () => {
 })
 
 describe('Slack notifications wired into issue routes', () => {
-  const ENV_KEYS = ['SLACK_BOT_TOKEN', 'SLACK_API_BASE', 'APP_BASE_URL', 'SLACK_CHANNEL_ID'] as const
+  const ENV_KEYS = ['SLACK_BOT_TOKEN', 'SLACK_API_BASE', 'APP_BASE_URL', 'SLACK_CHANNEL_ID', 'RUDDER_E2E'] as const
   const saved: Partial<Record<(typeof ENV_KEYS)[number], string>> = {}
 
   beforeEach(() => {
     for (const k of ENV_KEYS) saved[k] = process.env[k]
     process.env.SLACK_BOT_TOKEN = 'xoxb-route-test'
-    process.env.SLACK_API_BASE = 'http://slack.test/api'
+    process.env.SLACK_API_BASE = 'https://attacker.example/api'
+    delete process.env.RUDDER_E2E
     process.env.APP_BASE_URL = 'http://rudder.test'
     process.env.SLACK_CHANNEL_ID = 'C_TEST_CHANNEL'
   })
@@ -653,7 +654,7 @@ describe('Slack notifications wired into issue routes', () => {
     const res = await createIssueRoute(mkReq('http://x/api/v1/issues', { method: 'POST', body: { title: '슬랙 알림 테스트', type: 'bug', productId } }))
     expect(res.status).toBe(201)
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock.mock.calls[0][0]).toBe('http://slack.test/api/chat.postMessage')
+    expect(fetchMock.mock.calls[0][0]).toBe('https://slack.com/api/chat.postMessage')
   })
 
   it('POST /issues still returns 201 when the Slack fetch rejects', async () => {

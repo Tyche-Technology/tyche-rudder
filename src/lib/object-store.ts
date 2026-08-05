@@ -1,5 +1,8 @@
+import { constants } from 'node:fs'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
+import { createHash } from 'node:crypto'
 import { Storage } from '@google-cloud/storage'
 
 export type ObjectStore = {
@@ -10,19 +13,26 @@ export type ObjectStore = {
 
 let cached: ObjectStore | null = null
 
-// The only caller today (the upload route) always passes a server-generated
-// `issues/<id>/<uuid>` key, so this guard is currently unreachable — but the
-// property it protects (no object key may resolve outside the store's base
-// directory) belongs here, not in a caller that happens to be careful. A
-// future caller that forwards any less-trusted string must not be able to
-// turn this into a path-traversal write/read.
-function safeFsPath(dir: string, object: string): string {
-  const base = path.resolve(dir)
-  const resolved = path.resolve(base, object)
-  if (resolved !== base && !resolved.startsWith(base + path.sep)) {
-    throw new Error(`object-store: key escapes base directory: ${object}`)
+const OBJECT_KEY = /^issues\/[1-9]\d*\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function localFsDirectory(): string {
+  if (process.env.RUDDER_E2E === 'true') return path.join(os.tmpdir(), 'rudder-e2e-t12', 'objects')
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('object-store: filesystem backend is disabled in production')
   }
-  return resolved
+  if (process.env.NODE_ENV === 'test') return path.join(os.tmpdir(), `rudder-object-store-${process.pid}`)
+  return path.join(os.tmpdir(), 'rudder-object-store-dev')
+}
+
+function localFsPath(dir: string, object: string): string {
+  if (!OBJECT_KEY.test(object)) throw new Error('object-store: invalid object key')
+  return path.join(dir, createHash('sha256').update(object).digest('hex'))
+}
+
+async function prepareFsDirectory(dir: string): Promise<void> {
+  await fs.mkdir(dir, { recursive: true, mode: 0o700 })
+  if (!(await fs.lstat(dir)).isDirectory()) throw new Error('object-store: filesystem root is not a directory')
+  await fs.chmod(dir, 0o700)
 }
 
 // Tests inject a fake here (tests/helpers/db.ts pattern, same as __rudderTestDb).
@@ -32,18 +42,22 @@ export function getObjectStore(): ObjectStore {
   if (!cached) {
     const bucketName = process.env.GCS_BUCKET
     if (!bucketName) throw new Error('GCS_BUCKET not configured')
-    // "fs:<dir>" stores objects on the local filesystem — E2E and GCP-less
-    // local dev use this; production uses a real bucket name.
-    if (bucketName.startsWith('fs:')) {
-      const dir = bucketName.slice(3)
+    if (bucketName === 'fs') {
+      const dir = localFsDirectory()
       cached = {
         async save(object, data) {
-          const file = safeFsPath(dir, object)
-          await fs.mkdir(path.dirname(file), { recursive: true })
-          await fs.writeFile(file, data)
+          await prepareFsDirectory(dir)
+          await fs.writeFile(localFsPath(dir, object), data, { flag: 'wx', mode: 0o600 })
         },
-        async read(object) { return fs.readFile(safeFsPath(dir, object)) },
-        async delete(object) { await fs.rm(safeFsPath(dir, object), { force: true }) },
+        async read(object) {
+          await prepareFsDirectory(dir)
+          const handle = await fs.open(localFsPath(dir, object), constants.O_RDONLY | constants.O_NOFOLLOW)
+          try { return await handle.readFile() } finally { await handle.close() }
+        },
+        async delete(object) {
+          await prepareFsDirectory(dir)
+          await fs.rm(localFsPath(dir, object), { force: true })
+        },
       }
     } else {
       const bucket = new Storage().bucket(bucketName)
