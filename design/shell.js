@@ -8,15 +8,21 @@ const NAV = [
   { key: 'mine', href: '04-my-requests.html', ko: '내 요청', en: 'Mine', count: '4' },
 ];
 
-/* 11x12 grid, 2x — the rudder: stock on the left, blade stepping aft. Pixel. */
-const MARK = `<svg class="brand__mark px" width="22" height="24" viewBox="0 0 11 12" aria-hidden="true">
+/* 13x13 grid, 2x — ship's helm wheel: rim + 4 spokes + hub, handle pegs
+   poking past the rim at each spoke tip. Pixel. */
+const MARK = `<svg class="brand__mark px" width="26" height="26" viewBox="0 0 13 13" aria-hidden="true">
   <g fill="currentColor">
-    <rect x="2" y="0" width="2" height="12"/>
-    <rect x="4" y="3" width="1" height="6"/>
-    <rect x="5" y="4" width="1" height="5"/>
-    <rect x="6" y="5" width="1" height="4"/>
-    <rect x="7" y="6" width="1" height="3"/>
-    <rect x="8" y="7" width="1" height="2"/>
+    <rect x="11" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/>
+    <rect x="6" y="1" width="1" height="1"/><rect x="6" y="11" width="1" height="1"/>
+    <rect x="10" y="3" width="1" height="3"/><rect x="10" y="7" width="1" height="3"/>
+    <rect x="2" y="3" width="1" height="3"/><rect x="2" y="7" width="1" height="3"/>
+    <rect x="7" y="2" width="3" height="1"/><rect x="3" y="2" width="3" height="1"/>
+    <rect x="7" y="10" width="3" height="1"/><rect x="3" y="10" width="3" height="1"/>
+    <rect x="6" y="2" width="1" height="3"/><rect x="6" y="8" width="1" height="3"/>
+    <rect x="2" y="6" width="3" height="1"/><rect x="8" y="6" width="3" height="1"/>
+    <rect x="5" y="5" width="3" height="3"/>
+    <rect x="6" y="0" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/>
+    <rect x="0" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/>
   </g>
 </svg>`;
 

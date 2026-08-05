@@ -3,21 +3,7 @@
 // No shell (rail/topbar) — this is the one screen a signed-out visitor sees.
 import { useEffect, useState, type FormEvent } from 'react'
 import { authClient } from '@/lib/auth-client'
-
-function RudderMark() {
-  return (
-    <svg className="brand__mark px" width="22" height="24" viewBox="0 0 11 12" aria-hidden="true">
-      <g fill="currentColor">
-        <rect x="2" y="0" width="2" height="12" />
-        <rect x="4" y="3" width="1" height="6" />
-        <rect x="5" y="4" width="1" height="5" />
-        <rect x="6" y="5" width="1" height="4" />
-        <rect x="7" y="6" width="1" height="3" />
-        <rect x="8" y="7" width="1" height="2" />
-      </g>
-    </svg>
-  )
-}
+import { BrandMark } from '@/ui/sprites'
 
 // Never differentiate an unknown email from a wrong password in copy —
 // either would leak which accounts exist.
@@ -122,7 +108,7 @@ export default function LoginPage() {
       <div className="panel" style={{ width: '100%', maxWidth: '26rem' }}>
         <div className="panel__body stack">
           <div className="inline">
-            <RudderMark />
+            <BrandMark />
             <span className="display">RUDDER</span>
           </div>
           <h1 className="h-panel">순항 준비</h1>
