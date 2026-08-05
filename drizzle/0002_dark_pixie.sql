@@ -1,0 +1,1 @@
+ALTER TABLE "milestones" ADD CONSTRAINT "milestones_range_ck" CHECK ("milestones"."starts_on" IS NULL OR "milestones"."ends_on" IS NULL OR "milestones"."starts_on" <= "milestones"."ends_on");

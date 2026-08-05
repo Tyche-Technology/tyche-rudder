@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — 입항 대기</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+</head>
+<body data-page="inbox">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 class="h-panel">입항 대기</h1>
+        <span class="eyebrow">inbox</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" placeholder="제목, 번호, 요청자 검색" aria-label="이슈 검색">
+      </label>
+      <button class="btn btn--primary" type="button">새 이슈</button>
+    </header>
+
+    <div class="view">
+      <div class="view__head">
+        <h2 class="h-view">통관을 기다리는 화물 6건</h2>
+        <span class="mono muted push">중위 대기 3일 · 최장 9일</span>
+      </div>
+      <p class="view__lede">
+        슬랙·웹·도선사(봇)로 들어온 요청이 먼저 여기 도착합니다. 통관하면 우선순위가 붙고
+        선적 대기로 넘어갑니다. 통관 전에는 색이 없습니다 — 아직 아무 결정도 내려지지 않았다는 뜻입니다.
+      </p>
+
+      <div class="filters" style="margin-bottom:var(--s-4)">
+        <button class="fchip" aria-pressed="true">전체<span class="fchip__n">6</span></button>
+        <button class="fchip" aria-pressed="false">tyche-dashboard<span class="fchip__n">2</span></button>
+        <button class="fchip" aria-pressed="false">tyche-slack-bot<span class="fchip__n">1</span></button>
+        <button class="fchip" aria-pressed="false">lpa-collected<span class="fchip__n">2</span></button>
+        <button class="fchip" aria-pressed="false">partslink<span class="fchip__n">1</span></button>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head">
+          <span class="chip chip--inbox"><span class="flag flag--inbox" aria-hidden="true"></span>입항 대기<span class="chip__en">Inbox</span></span>
+          <span class="mono muted push">접수 순</span>
+        </div>
+
+        <div class="rows">
+          <!-- 통관 패널이 펼쳐진 행 -->
+          <div class="row row--open">
+            <span class="id">#151</span>
+            <span class="row__title">eBay 주문 동기화가 03시 배치에서 12건 누락됩니다</span>
+            <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+            <span class="mono faint">lpa-collected</span>
+            <span class="inline inline--tight"><span class="flag flag--pilot" aria-hidden="true" title="도선사(봇) 등록"></span><span class="mono">박지연</span></span>
+            <span class="row__when mono">07-29</span>
+            <button class="btn btn--sm" type="button" aria-expanded="true">닫기</button>
+          </div>
+
+          <div style="padding:var(--s-4) var(--s-4) var(--s-5) 68px;background:var(--sunken);border-bottom:1px solid var(--hairline)">
+            <div class="stack" style="max-width:640px">
+              <p class="prose">
+                3시 배치 이후 eBay 주문 12건이 적재되지 않았습니다. 주문번호 목록을 첨부했습니다.
+                오늘 발송 마감 전에 확인이 필요합니다.
+              </p>
+
+              <div class="inline" style="gap:var(--s-5)">
+                <div class="field">
+                  <span class="label">우선순위 <span class="faint">필수</span></span>
+                  <div class="seg" role="radiogroup" aria-label="우선순위">
+                    <button class="seg__b seg__b--p0" role="radio" aria-checked="true" type="button">P0</button>
+                    <button class="seg__b" role="radio" aria-checked="false" type="button">P1</button>
+                    <button class="seg__b" role="radio" aria-checked="false" type="button">P2</button>
+                  </div>
+                </div>
+                <div class="field" style="min-width:150px">
+                  <label class="label" for="ms">마일스톤</label>
+                  <div class="select-wrap">
+                    <select class="select" id="ms">
+                      <option>2026 Q3</option><option>2026 Q4</option><option>미배정</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field" style="min-width:150px">
+                  <label class="label" for="as">담당자</label>
+                  <div class="select-wrap">
+                    <select class="select" id="as">
+                      <option>최민호</option><option>김한솔</option><option>미배정</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="inline">
+                <button class="btn btn--accent" type="button">P0으로 통관</button>
+                <button class="btn btn--danger" type="button">반송</button>
+                <button class="btn" type="button">정박</button>
+                <span class="hint push">반송·정박은 사유를 남겨야 저장됩니다.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="id">#150</span>
+            <span class="row__title">마일스톤별 진척률을 매주 월요일 슬랙으로 보내주세요</span>
+            <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+            <span class="mono faint">tyche-slack-bot</span>
+            <span class="mono">김한솔</span>
+            <span class="row__when mono">07-29</span>
+            <button class="btn btn--sm" type="button">통관</button>
+          </div>
+
+          <div class="row">
+            <span class="id">#148</span>
+            <span class="row__title">partslink 크롤러 세션이 만료되면 자동으로 다시 로그인하게 해주세요</span>
+            <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+            <span class="mono faint">partslink</span>
+            <span class="mono">최민호</span>
+            <span class="row__when mono">07-28</span>
+            <button class="btn btn--sm" type="button">통관</button>
+          </div>
+
+          <div class="row">
+            <span class="id">#147</span>
+            <span class="row__title">정산 리포트 PDF 다운로드 버튼이 사파리에서 동작하지 않습니다</span>
+            <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+            <span class="mono faint">tyche-dashboard</span>
+            <span class="mono">이수민</span>
+            <span class="row__when mono">07-27</span>
+            <button class="btn btn--sm" type="button">통관</button>
+          </div>
+
+          <div class="row">
+            <span class="id">#145</span>
+            <span class="row__title">재고 없음으로 취소할 때 eBay 사유 코드를 자동으로 골라주세요</span>
+            <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+            <span class="mono faint">tyche-slack-bot</span>
+            <span class="inline inline--tight"><span class="flag flag--pilot" aria-hidden="true" title="도선사(봇) 등록"></span><span class="mono">이수민</span></span>
+            <span class="row__when mono">07-26</span>
+            <button class="btn btn--sm" type="button">통관</button>
+          </div>
+
+          <div class="row">
+            <span class="id">#141</span>
+            <span class="row__title">대시보드 매출이 재집계 후 2시간 늦게 반영됩니다</span>
+            <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+            <span class="mono faint">tyche-dashboard</span>
+            <span class="mono">박지연</span>
+            <span class="row__when mono">07-21</span>
+            <button class="btn btn--sm" type="button">통관</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:var(--s-3)">
+        <span class="flag flag--pilot" aria-hidden="true" style="vertical-align:-2px"></span>
+        표식은 도선사(슬랙 봇)가 대신 등록했다는 뜻입니다. 요청자는 사람 이름 그대로 남습니다.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

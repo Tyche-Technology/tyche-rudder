@@ -1,0 +1,1217 @@
+/* ==========================================================================
+   Rudder — design system
+   Direction: a clear morning underway. Pale sky and open water as the ground,
+   one warm beacon amber for arrival. The roadmap horizon is the hero.
+   Status = International Code of Signals flags (colour + pattern + label).
+   Progress = waterline: cargo loaded, hull settling. Arrival is a moment.
+
+   This file is the token + component source of truth. Phase 2 imports it.
+   ========================================================================== */
+
+/* This file is a copy of design/rudder.css. Adding a style the design
+   system genuinely lacks (a new component, a missing state) is allowed —
+   land it in both files, identically. What's not allowed is drift: this
+   file redesigning something rudder.css already defines, or the two
+   diverging on anything other than the two deliberate changes below.
+   Besides those two, and any such additions kept in sync, this stays a
+   copy of design/rudder.css, both required for next/font self-hosting
+   (layout.tsx):
+     1. The two @import url(...) font lines are removed — next/font fetches
+        Gothic A1 / IBM Plex Mono at build time instead.
+     2. --font-display and --font-mono are rewired below to read
+        var(--font-display-src)/var(--font-mono-src) — the CSS variables
+        next/font attaches to <html> — instead of the literal family names.
+   A re-sync that reverts either of these silently falls back to system
+   fonts; no test catches that regression, so preserve both by hand. */
+
+/* --- 1. Tokens ---------------------------------------------------------- */
+
+:root {
+  /* Type — display/mono are self-hosted via next/font (layout.tsx), which
+     exposes each as a CSS variable instead of the literal family name. */
+  --font-display: var(--font-display-src), 'Pretendard Variable', system-ui, sans-serif;
+  --font-body: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-mono: var(--font-mono-src), ui-monospace, SFMono-Regular, monospace;
+
+  --t-11: 11px;
+  --t-12: 12px;
+  --t-13: 13px;
+  --t-14: 14px;
+  --t-16: 16px;
+  --t-20: 20px;
+  --t-26: 26px;
+  --t-34: 34px;
+
+  --lh-tight: 1.28;
+  --lh-ui: 1.4;
+  --lh-prose: 1.65;
+
+  /* Space (4px base) */
+  --s-05: 2px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+
+  /* Radii — softened; this tool should feel like open air, not a machine shop */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 999px;
+
+  /* Layout */
+  --rail-w: 216px;
+  --topbar-h: 56px;
+  --col-w: 288px;
+
+  /* Colour — light theme: morning sky over water */
+  --canvas: #eef4f7;
+  --canvas-far: #f8fbfc;
+  --surface: #ffffff;
+  --sunken: #f2f7f9;
+
+  /* Four text tiers, every one of them AA on every ground it can land on
+     (measured: docs/superpowers/design/…-design-system.md §7). */
+  --ink: #10242e;
+  --ink-2: #2f4a57;
+  --muted: #405b68;
+  --faint: #536e7b;
+
+  --hairline: #d7e3e8;
+  --hairline-strong: #b9cbd3;
+
+  --accent: #e0921c;         /* Beacon — the light you steer toward */
+  --accent-ink: #9a6100;     /* accent as text on light ground */
+  --accent-wash: #fdf2dd;
+  --on-accent: #1a1200;
+  --focus: #0e6f9e;          /* focus ring — sea blue, never the accent */
+
+  /* Sky & water (horizon graphic) */
+  --sky-1: #dceef7;
+  --sky-2: #f3fafb;
+  --sea-1: #cbe8ef;
+  --sea-2: #b3dde7;
+  --land: #a89a7e;           /* coast — ports stand on it, ships never do */
+
+  /* Status: flag hue / chip ground / chip text */
+  --st-inbox: #6d8794;
+  --st-inbox-bg: transparent;
+  --st-inbox-fg: #3f5b68;
+
+  --st-backlog: #1e5fa8;
+  --st-backlog-bg: #e3edfa;
+  --st-backlog-fg: #164778;
+
+  --st-progress: #0e9bb0;
+  --st-progress-bg: #d6f1f5;
+  --st-progress-fg: #05646f;
+
+  --st-done: #188a5e;
+  --st-done-bg: #ddf2e7;
+  --st-done-fg: #10603f;
+
+  --st-rejected: #99513f;
+  --st-rejected-bg: #f6e7e3;
+  --st-rejected-fg: #74392b;
+
+  --st-hold: #5b7183;
+  --st-hold-bg: #e7edf1;
+  --st-hold-fg: #3a4b58;
+
+  --flag-void: #ffffff;      /* the white in a flag pattern */
+
+  /* Waterline */
+  --water: #0e9bb0;
+  --water-fill: rgba(14, 155, 176, 0.12);
+  --water-crest: rgba(14, 155, 176, 0.5);
+
+  /* Elevation — light and airy */
+  --e-1: 0 1px 2px rgba(16, 36, 46, 0.05);
+  --e-2: 0 3px 12px rgba(16, 36, 46, 0.08);
+  --e-3: 0 12px 30px rgba(16, 36, 46, 0.16);
+}
+
+:root[data-theme='dark'] {
+  --canvas: #0a1620;
+  --canvas-far: #0d1d28;
+  --surface: #10202a;
+  --sunken: #0c1922;
+
+  --ink: #e8f1f4;
+  --ink-2: #c3d5dc;
+  --muted: #92aab5;
+  --faint: #7b95a2;
+
+  --hairline: #21323d;
+  --hairline-strong: #334956;
+
+  --accent: #f2ab3c;
+  --accent-ink: #f8c473;
+  --accent-wash: #2a1f0a;
+  --on-accent: #17120a;
+  --focus: #56b6e0;
+
+  --sky-1: #0d2233;
+  --sky-2: #122b3c;
+  --sea-1: #0f2c39;
+  --sea-2: #0a2230;
+  --land: #3f4a44;
+
+  --st-inbox: #6f8895;
+  --st-inbox-bg: transparent;
+  --st-inbox-fg: #a6bcc6;
+
+  --st-backlog: #4b93de;
+  --st-backlog-bg: #15283b;
+  --st-backlog-fg: #a6cdf7;
+
+  --st-progress: #2ebccf;
+  --st-progress-bg: #0b2c34;
+  --st-progress-fg: #82dfee;
+
+  --st-done: #3aab79;
+  --st-done-bg: #0d2a1f;
+  --st-done-fg: #8ddab2;
+
+  --st-rejected: #b8705d;
+  --st-rejected-bg: #2a1a16;
+  --st-rejected-fg: #e0a897;
+
+  --st-hold: #85a0b0;
+  --st-hold-bg: #17242d;
+  --st-hold-fg: #b4c8d4;
+
+  --flag-void: #eaf2f5;
+
+  --water: #2ebccf;
+  --water-fill: rgba(46, 188, 207, 0.16);
+  --water-crest: rgba(46, 188, 207, 0.6);
+
+  --e-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --e-2: 0 3px 14px rgba(0, 0, 0, 0.45);
+  --e-3: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+
+/* --- 2. Reset & base --------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { color-scheme: light; }
+html[data-theme='dark'] { color-scheme: dark; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--canvas) 0, var(--canvas-far) 520px);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-14);
+  line-height: var(--lh-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+}
+
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* --- 3. Type utilities ------------------------------------------------- */
+
+.display { font-family: var(--font-display); font-size: var(--t-34); font-weight: 800; letter-spacing: -0.025em; }
+.h-view { font-family: var(--font-display); font-size: var(--t-26); font-weight: 700; }
+.h-panel { font-family: var(--font-display); font-size: var(--t-20); font-weight: 700; }
+.h-card { font-family: var(--font-body); font-size: var(--t-16); font-weight: 600; letter-spacing: -0.01em; line-height: 1.42; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.mono { font-family: var(--font-mono); font-size: var(--t-12); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+.prose { font-size: var(--t-14); line-height: var(--lh-prose); color: var(--ink-2); }
+.prose + .prose { margin-top: var(--s-3); }
+
+/* Pixel sprites — every illustrative graphic in Rudder is drawn on a pixel grid.
+   The viewBox is the grid; width/height must stay an integer multiple of it so
+   the pixels never land on half-device-pixels. UI chrome stays vector-crisp. */
+.px { shape-rendering: crispEdges; flex: none; }
+
+/* Issue id — the manifest voice */
+.id {
+  font-family: var(--font-mono);
+  font-size: var(--t-12);
+  font-weight: 500;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- 4. Shell --------------------------------------------------------- */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  padding: var(--s-5) var(--s-3);
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-2);
+}
+.brand__mark { flex: none; color: var(--accent); }
+.brand__name {
+  font-family: var(--font-display);
+  font-size: var(--t-16);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.brand__sub { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); letter-spacing: 0.04em; }
+
+.nav { display: flex; flex-direction: column; gap: var(--s-05); }
+.nav__group { margin-top: var(--s-4); padding: 0 var(--s-2) var(--s-1); }
+
+.nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  font-size: var(--t-13);
+  font-weight: 500;
+}
+.nav__item:hover { background: var(--sunken); text-decoration: none; }
+.nav__item[aria-current='page'] { background: var(--sunken); color: var(--ink); font-weight: 700; }
+.nav__item[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+}
+.nav__en { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); }
+.nav__count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  color: var(--muted);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  padding: 0 6px;
+}
+
+.rail__foot { margin-top: auto; display: flex; flex-direction: column; gap: var(--s-2); }
+.who-row { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2); border-top: 1px solid var(--hairline); }
+
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: var(--topbar-h);
+  padding: 0 var(--s-6);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.topbar__title { display: flex; align-items: baseline; gap: var(--s-2); }
+.topbar__spacer { margin-left: auto; }
+
+.view { padding: var(--s-6); min-width: 0; }
+.view__head { display: flex; align-items: flex-end; gap: var(--s-3); margin-bottom: var(--s-2); }
+.view__lede { margin-bottom: var(--s-5); color: var(--muted); font-size: var(--t-13); max-width: 68ch; }
+
+/* --- 5. Buttons ------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  padding: 7px 13px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--t-13);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.btn:hover { background: var(--sunken); text-decoration: none; }
+
+/* Inverted fills take --surface, never #fff: --ink is near-white in dark theme. */
+.btn--primary { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn--primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+.btn--accent { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn--accent:hover { filter: brightness(1.05); }
+
+.btn--ghost { background: transparent; border-color: transparent; color: var(--muted); font-weight: 500; }
+.btn--ghost:hover { background: var(--sunken); color: var(--ink); }
+
+.btn--danger { color: var(--st-rejected-fg); border-color: var(--hairline-strong); }
+.btn--danger:hover { background: var(--st-rejected-bg); border-color: var(--st-rejected); }
+
+.btn--sm { padding: 4px 9px; font-size: var(--t-12); }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* --- 6. Signal flags & status chips ----------------------------------- */
+/* Three signals per status: flag colour, flag pattern, Korean + English label. */
+
+.flag {
+  flex: none;
+  display: inline-block;
+  position: relative;
+  width: 11px;
+  height: 14px;
+  border-radius: 1px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.flag--lg { width: 16px; height: 20px; }
+
+/* inbox — no colour yet: grooming is what assigns one */
+.flag--inbox { background: transparent; border: 1px dashed var(--st-inbox); }
+/* backlog — Blue Peter: white rectangle in a blue field ("about to sail") */
+.flag--backlog { background: var(--st-backlog); }
+.flag--backlog::after {
+  content: '';
+  position: absolute;
+  inset: 30% 25%;
+  background: var(--flag-void);
+}
+/* in progress — horizontal bands: underway */
+.flag--progress {
+  background: linear-gradient(
+    to bottom,
+    var(--st-progress) 0 36%,
+    var(--flag-void) 36% 58%,
+    var(--st-progress) 58% 100%
+  );
+}
+/* done — diagonal stripe */
+.flag--done {
+  background: linear-gradient(
+    128deg,
+    var(--st-done) 0 42%,
+    var(--flag-void) 42% 58%,
+    var(--st-done) 58% 100%
+  );
+}
+/* rejected — cross: cargo refused */
+.flag--rejected { background: var(--st-rejected); }
+.flag--rejected::before,
+.flag--rejected::after {
+  content: '';
+  position: absolute;
+  left: -18%;
+  right: -18%;
+  top: 45%;
+  height: 2px;
+  background: var(--flag-void);
+}
+.flag--rejected::before { transform: rotate(52deg); }
+.flag--rejected::after { transform: rotate(-52deg); }
+/* on hold — quartered: made fast alongside */
+.flag--hold {
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    var(--st-hold) 0 25%,
+    var(--flag-void) 25% 50%,
+    var(--st-hold) 50% 75%,
+    var(--flag-void) 75% 100%
+  );
+}
+/* pilot aboard (ICS "H") — reserved for the 도선사 agent actor.
+   The pale half is --sunken, not white: on a white row a white half would
+   disappear and the flag would read as a single red tick. */
+.flag--pilot {
+  background: linear-gradient(to right, var(--sunken) 0 50%, var(--st-rejected) 50% 100%);
+  border: 1px solid var(--hairline-strong);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 7px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  font-size: var(--t-12);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip__en {
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.chip--inbox { background: var(--st-inbox-bg); color: var(--st-inbox-fg); border-color: var(--hairline-strong); border-style: dashed; }
+.chip--backlog { background: var(--st-backlog-bg); color: var(--st-backlog-fg); }
+.chip--progress { background: var(--st-progress-bg); color: var(--st-progress-fg); }
+.chip--done { background: var(--st-done-bg); color: var(--st-done-fg); }
+.chip--rejected { background: var(--st-rejected-bg); color: var(--st-rejected-fg); }
+.chip--hold { background: var(--st-hold-bg); color: var(--st-hold-fg); }
+
+/* --- 7. Priority & type ------------------------------------------------ */
+/* Priority is text first. Only P0 is chromatic, so the eye finds it instantly. */
+
+.ptag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.ptag--p0 { background: var(--accent); color: var(--on-accent); }
+.ptag--p1 { border: 1px solid var(--hairline-strong); color: var(--ink-2); }
+.ptag--p2 { color: var(--faint); padding-left: 0; padding-right: 0; }
+
+/* Type carries no colour of its own — a glyph plus neutral ink. */
+.ttag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  font-size: var(--t-12);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ttag__g { font-family: var(--font-mono); font-size: var(--t-11); color: var(--ink-2); }
+
+/* --- 8. Filter chips -------------------------------------------------- */
+
+.filters { display: flex; align-items: center; gap: var(--s-1); flex-wrap: wrap; }
+.fchip {
+  padding: 4px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--t-12);
+  font-weight: 500;
+  cursor: pointer;
+}
+.fchip:hover { border-color: var(--hairline-strong); color: var(--ink); }
+.fchip[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+.fchip__n { font-family: var(--font-mono); font-size: var(--t-11); opacity: 0.7; margin-left: 4px; }
+
+/* --- 9. Panels, cards, rows ------------------------------------------ */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-1);
+}
+.panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--hairline);
+}
+.panel__body { padding: var(--s-4); }
+
+/* Manifest row — the dense list line used by Inbox and My Requests */
+.rows { display: flex; flex-direction: column; }
+.row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto auto 68px auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--hairline);
+}
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--sunken); }
+.row__title { font-size: var(--t-14); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row__when { color: var(--faint); text-align: right; }
+.row--open { background: var(--sunken); }
+/* A row's expanded content (Inbox grooming panel) indents past the id
+   gutter (52px column + gap) so it lines up under the title, not the id. */
+.row-expand { padding: var(--s-4) var(--s-4) var(--s-5) 68px; background: var(--sunken); border-bottom: 1px solid var(--hairline); }
+
+/* Issue card — the kanban unit */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  box-shadow: var(--e-1);
+  cursor: grab;
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+.card:hover { box-shadow: var(--e-2); }
+.card--p0 { border-left: 3px solid var(--accent); padding-left: calc(var(--s-3) - 2px); }
+.card__top { display: flex; align-items: center; gap: var(--s-2); }
+.card__grip {
+  margin-left: auto;
+  color: var(--hairline-strong);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  letter-spacing: -1px;
+  opacity: 0;
+}
+.card:hover .card__grip { opacity: 1; }
+.card__meta { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.card__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: var(--t-12);
+}
+.card--lifted { box-shadow: var(--e-3); transform: rotate(0.5deg); cursor: grabbing; }
+
+/* Drop indicator for drag ordering */
+.drop {
+  position: relative;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.drop::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* --- 10. Kanban board ------------------------------------------------- */
+
+.board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--col-w);
+  gap: var(--s-3);
+  overflow-x: auto;
+  padding-bottom: var(--s-3);
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+}
+.col__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--hairline);
+}
+.col__n { margin-left: auto; font-family: var(--font-mono); font-size: var(--t-12); color: var(--muted); }
+.col__body { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3); }
+.col__note {
+  padding: 0 var(--s-3) var(--s-3);
+  font-size: var(--t-11);
+  font-family: var(--font-mono);
+  color: var(--faint);
+}
+
+/* --- 11. Waterline (the signature) ----------------------------------- */
+/* Milestone progress reads as a hull settling deeper as cargo is loaded. */
+
+.berth {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.berth__water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  height: var(--fill, 0%);
+  background: var(--water-fill);
+  border-top: 1px solid var(--water-crest);
+  transition: height 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.berth__water::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: -1px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--water-crest), transparent);
+  opacity: 0.5;
+}
+.berth--live .berth__water::after { animation: drift 9s ease-in-out infinite; }
+/* Arrived: the water turns to the completion colour so 100% reads as a result,
+   not just a full bar. */
+.berth--arrived {
+  --water-fill: color-mix(in srgb, var(--st-done) 12%, transparent);
+  --water-crest: var(--st-done);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateX(-8%); }
+  50% { transform: translateX(8%); }
+}
+
+/* Compact linear gauge for lists */
+.gauge {
+  position: relative;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  overflow: hidden;
+}
+.gauge__fill {
+  height: 100%;
+  width: var(--fill, 0%);
+  background: var(--water);
+  border-right: 1px solid var(--water-crest);
+}
+.gauge--arrived .gauge__fill { background: var(--st-done); }
+
+.counts { display: flex; align-items: baseline; gap: var(--s-3); font-family: var(--font-mono); font-size: var(--t-12); color: var(--muted); }
+.counts b { font-family: var(--font-display); font-size: var(--t-26); font-weight: 800; color: var(--ink); letter-spacing: -0.03em; }
+.counts__ex { color: var(--faint); }
+
+/* --- 12. Horizon (roadmap hero) -------------------------------------- */
+/* Sky, water, a dotted course, milestone ports, and the beacon you steer to. */
+
+.horizon {
+  position: relative;
+  overflow: hidden;
+  padding: var(--s-8) var(--s-6) 0;
+  margin-bottom: var(--s-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--sky-1) 0, var(--sky-2) 100%);
+}
+/* Open water. The course line and its ports sit on this surface. */
+.horizon__sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 68px;
+  background: linear-gradient(180deg, var(--sea-1), var(--sea-2));
+  pointer-events: none;
+}
+/* Pixel foam: one row of blocks at the surface. Quiet enough that the course
+   line stays the thing you read. */
+.horizon__sea::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background-image: repeating-linear-gradient(90deg, var(--water-crest) 0 9px, transparent 9px 18px);
+  opacity: 0.45;
+}
+/* Distant ripples further out — texture, not noise. */
+.horizon__sea::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 26px;
+  height: 3px;
+  background-image: repeating-linear-gradient(90deg, var(--water-crest) 0 6px, transparent 6px 36px);
+  opacity: 0.3;
+}
+.horizon__sun { position: absolute; top: var(--s-5); right: var(--s-6); color: var(--accent); opacity: 0.8; pointer-events: none; }
+/* Day and night are different objects, not the same disc recoloured. */
+.horizon__sun--night { display: none; }
+:root[data-theme='dark'] .horizon__sun--day { display: none; }
+:root[data-theme='dark'] .horizon__sun--night { display: block; color: var(--ink-2); opacity: 0.7; }
+.horizon__head { position: relative; display: flex; align-items: flex-end; gap: var(--s-3); margin-bottom: var(--s-6); }
+
+/* Position IS time. The track maps the visible date range linearly (rounded
+   out to quarter boundaries), quarter ticks give the scale, each milestone
+   port stands at its END date, and the ship marks today. The metaphor rides
+   on top of the axis — it never replaces it. Ports sit on land; only the
+   ship is on the water.
+
+   Geometry (px from .tl bottom): 0–68 sea · 68 waterline (markers stand
+   here) · 140/178 the two label rows · top strip = quarter scale.
+   Labels alternate rows A/B in chronological order so close-together
+   deadlines cannot collide. --x is percent along the track (map the date
+   range to 2%…98% so edge sprites stay inside). */
+.tl-scroll { overflow-x: auto; }
+.tl { position: relative; height: 236px; min-width: 860px; }
+.tl::before {
+  content: '';
+  position: absolute;
+  left: 1%;
+  right: 1%;
+  bottom: 68px;
+  border-top: 2px dashed var(--water-crest);
+}
+
+.tl__tick {
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  border-left: 1px dashed var(--hairline-strong);
+  opacity: 0.55;
+}
+.tl__qlabel {
+  position: absolute;
+  top: 0;
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+
+.tl__port {
+  position: absolute;
+  bottom: 68px;
+  left: var(--x);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+}
+.tl__cap {
+  position: absolute;
+  left: var(--x);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.tl__cap--a { bottom: 140px; }
+.tl__cap--b { bottom: 178px; }
+/* Row-B caps float higher, so a thin leader ties them to their port. */
+.tl__cap--b::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  height: 34px;
+  width: 1px;
+  background: var(--hairline-strong);
+  opacity: 0.6;
+}
+/* Clamp a cap that would clip at the track's right edge. */
+.tl__cap--end { transform: translateX(-90%); align-items: flex-end; }
+.tl__name { font-size: var(--t-13); font-weight: 600; color: var(--ink); }
+.tl__pct { font-family: var(--font-mono); font-size: var(--t-11); color: var(--muted); }
+.tl__pct--overdue { color: var(--st-rejected-fg); font-weight: 500; }
+
+/* Port marker states — real aids-to-navigation hierarchy: waypoints are small
+   BUOYS; the ONE lighthouse stands at the END of the visible route (the
+   latest planned milestone). That is a fact ("the planned route ends here"),
+   not a judgement — a "lighthouse = nearest deadline" rule was tried and
+   rejected: it jumped on its own as dates passed, and it lit an untouched
+   future milestone while an overdue one was the team's actual focus.
+   Place concepts belong to the lighthouse; TIME urgency belongs to buoy
+   lights — the nearest future deadline is a LIT buoy, not a second tower.
+   done: green flag on the coast (a port already visited, small)
+   next: lit buoy — accent topmark, blinking (nearest future deadline)
+   future: unlit channel buoy (faint, afloat)
+   overdue: red danger buoy + D+n label (a hazard the ship sailed past)
+   dest: THE lighthouse, lit in accent, blinking. At most one on screen. */
+.tl__port--done { color: var(--st-done); }
+.tl__port--dest { color: var(--accent); }
+.tl__port--dest .lh__light,
+.tl__port--dest .lh__beam { animation: blink 4s ease-in-out infinite; }
+.tl__port--next { color: var(--muted); }
+.tl__port--next .by__top { fill: var(--accent); animation: blink 4s ease-in-out infinite; }
+.tl__port--future { color: var(--faint); }
+.tl__port--overdue { color: var(--st-rejected); }
+/* Buoys float: hull dips a few px below the waterline (land ports sit ON it). */
+.tl__port--afloat { bottom: 64px; }
+
+/* Today. The ship floats slightly into the water, in front of any port it is
+   passing, with its label down in the sea band where nothing else lives. */
+.tl__ship {
+  position: absolute;
+  bottom: 58px;
+  left: var(--x);
+  transform: translateX(-50%);
+  z-index: 2;
+  color: var(--ink);
+  animation: bob 5s ease-in-out infinite;
+}
+.tl__today {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  font-weight: 500;
+  color: var(--muted);
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  55% { opacity: 0.55; }
+}
+
+/* --- 13. Forms ------------------------------------------------------- */
+
+.field { display: flex; flex-direction: column; gap: var(--s-1); }
+.label { font-size: var(--t-12); font-weight: 600; color: var(--muted); }
+.hint { font-size: var(--t-11); color: var(--faint); }
+/* Same hazard token as .btn--danger / .tl__pct--overdue (a hazard the ship
+   sailed past) — reused here for the invite page's session-mismatch notice,
+   the one .hint that must read as a warning, not routine field chrome. */
+.hint--danger { color: var(--st-rejected-fg); font-weight: 500; }
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  font-size: var(--t-13);
+}
+.input::placeholder,
+.textarea::placeholder { color: var(--faint); }
+.input:hover,
+.select:hover,
+.textarea:hover { border-color: var(--muted); }
+.textarea { min-height: 76px; resize: vertical; line-height: var(--lh-prose); }
+.select { appearance: none; padding-right: var(--s-6); }
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--faint);
+  pointer-events: none;
+  font-size: var(--t-11);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 260px;
+  padding: 6px 10px;
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  color: var(--faint);
+  font-size: var(--t-13);
+}
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; }
+
+/* Segmented radio — priority / decision pickers */
+.seg { display: inline-flex; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); overflow: hidden; }
+.seg__b {
+  padding: 5px 11px;
+  border: 0;
+  border-right: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-12);
+  cursor: pointer;
+}
+.seg__b:last-child { border-right: 0; }
+.seg__b:hover { background: var(--sunken); color: var(--ink); }
+.seg__b[aria-checked='true'] { background: var(--ink); color: var(--surface); font-weight: 500; }
+.seg__b--p0[aria-checked='true'] { background: var(--accent); color: var(--on-accent); }
+.seg__b:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* --- 14. Comment thread & history ----------------------------------- */
+
+.thread { display: flex; flex-direction: column; gap: var(--s-4); }
+.cmt { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--s-3); }
+.avatar {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  font-size: var(--t-12);
+  font-weight: 600;
+  color: var(--muted);
+}
+.cmt__head { display: flex; align-items: baseline; gap: var(--s-2); margin-bottom: var(--s-1); }
+.cmt__who { font-weight: 600; font-size: var(--t-13); }
+.cmt__role { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); }
+.cmt__body {
+  padding: var(--s-3);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  font-size: var(--t-13);
+  line-height: var(--lh-prose);
+  color: var(--ink-2);
+}
+
+.log { display: flex; flex-direction: column; }
+.log__item {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  font-size: var(--t-12);
+  color: var(--muted);
+}
+.log__rail { position: relative; display: grid; place-items: center; }
+.log__rail::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--hairline);
+}
+.log__pip {
+  position: relative;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--hairline-strong);
+}
+.log__item:first-child .log__rail::before { top: 50%; }
+.log__item:last-child .log__rail::before { bottom: 50%; }
+.log__who { color: var(--ink-2); font-weight: 600; }
+.log__field { font-family: var(--font-mono); font-size: var(--t-11); color: var(--faint); }
+
+/* --- 15. Relations, attachments, stamp ------------------------------ */
+
+.rel { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) 0; border-bottom: 1px solid var(--hairline); font-size: var(--t-13); }
+.rel:last-child { border-bottom: 0; }
+.rel__kind {
+  flex: none;
+  padding: 1px 7px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  color: var(--muted);
+}
+.rel__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.att { display: flex; gap: var(--s-2); }
+.att__item {
+  width: 84px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  color: var(--faint);
+}
+
+/* Real attachment list row (Task 8's AttachmentsPanel) — .att/.att__item
+   above are the static mockup's placeholder boxes; a real row carries a
+   filename link plus size + date, which doesn't fit that fixed-size grid.
+   Shape mirrors .rel/.rel__title above (same list-row pattern, different
+   data). */
+.att-row { display: flex; align-items: baseline; gap: var(--s-2); padding: var(--s-2) 0; border-bottom: 1px solid var(--hairline); font-size: var(--t-13); }
+.att-row:last-child { border-bottom: 0; }
+.att-row__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Customs "refused" stamp — the one place humour touches a data view */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 2px dashed var(--st-rejected);
+  border-radius: var(--r-sm);
+  color: var(--st-rejected-fg);
+  background: var(--st-rejected-bg);
+  font-family: var(--font-display);
+  font-size: var(--t-12);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transform: rotate(-1.4deg);
+}
+
+/* Arrival marker — "도착". Only where something genuinely finished. */
+.arrived {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--st-done-fg);
+  font-family: var(--font-mono);
+  font-size: var(--t-11);
+  font-weight: 500;
+}
+.arrived::before { content: '✓'; }
+
+/* --- 16. Meta strip (issue detail) ---------------------------------- */
+
+.meta { display: flex; flex-direction: column; gap: var(--s-3); }
+.meta__row { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: var(--s-3); align-items: center; }
+.meta__k { font-size: var(--t-12); color: var(--faint); }
+.meta__v { font-size: var(--t-13); display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+
+/* --- 17. Empty states ------------------------------------------------ */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-12) var(--s-6);
+  text-align: center;
+  color: var(--muted);
+}
+.empty__art { color: var(--hairline-strong); }
+/* Calm water, in pixels — the one illustration every empty state shares. */
+.px-sea {
+  width: 96px;
+  height: 15px;
+  color: var(--hairline-strong);
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px);
+  background-size: 100% 3px;
+  background-position: 0 0, 6px 6px, 0 12px;
+  background-repeat: no-repeat;
+}
+.empty__title { font-family: var(--font-display); font-size: var(--t-16); font-weight: 700; color: var(--ink-2); }
+.empty__body { font-size: var(--t-13); max-width: 42ch; line-height: var(--lh-prose); }
+
+/* --- 18. Layout helpers --------------------------------------------- */
+
+.stack { display: flex; flex-direction: column; gap: var(--s-4); }
+.stack--sm { gap: var(--s-2); }
+.inline { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.inline--tight { gap: var(--s-1); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--s-5); align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4); }
+.push { margin-left: auto; }
+.divider { height: 1px; background: var(--hairline); }
+
+/* --- 19. Dialog -------------------------------------------------------- */
+/* Native <dialog> (no custom modal system) — UA chrome stripped and
+   replaced with the panel surface; the browser centers and backdrops a
+   :modal dialog on its own. */
+dialog {
+  padding: var(--s-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: inherit;
+  box-shadow: var(--e-3);
+  width: min(480px, calc(100vw - var(--s-6) * 2));
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+
+/* --- 20. Responsive & motion floor ---------------------------------- */
+
+@media (max-width: 1180px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  :root { --rail-w: 60px; }
+  .brand__name,
+  .brand__sub,
+  .nav__en,
+  .nav__label,
+  .nav__group,
+  .who-row span { display: none; }
+  .nav__item { justify-content: center; padding: var(--s-2); }
+  .row { grid-template-columns: 44px minmax(0, 1fr) auto auto; }
+  .row .ttag,
+  .row .row__when { display: none; }
+  .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .view { padding: var(--s-4); }
+  .horizon { padding: var(--s-6) var(--s-4) var(--s-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

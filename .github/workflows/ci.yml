@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  # master is not branch-protected and direct pushes land here, so this stays
+  # unconditional (no paths filter) even though deploy.yml's own `test` job
+  # also runs on every master push. That duplication is deliberate: deploy.yml
+  # only tests files inside its build-input allowlist, so a push touching
+  # tests/**, README.md, or workflow files outside that allowlist would
+  # otherwise skip unit tests entirely. Don't "clean this up".
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx vitest run --dir tests --exclude 'e2e/**'
+      - run: npm run coverage:gate
+
+  e2e:
+    needs: test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine@sha256:3d0f7584ed7d04e27fa050d6683a74746608faf21f202be78460d679cc56461f
+        env:
+          POSTGRES_USER: rudder
+          POSTGRES_PASSWORD: rudder
+          POSTGRES_DB: rudder
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd "pg_isready -U rudder -d rudder"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-traces
+          path: test-results/e2e
+          if-no-files-found: ignore
+          retention-days: 7

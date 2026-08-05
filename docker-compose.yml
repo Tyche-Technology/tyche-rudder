@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: rudder
+      POSTGRES_PASSWORD: rudder
+      POSTGRES_DB: rudder
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [rudder-pgdata-pg15:/var/lib/postgresql/data]
+volumes:
+  # Renamed from rudder-pgdata (postgres 16 data) when this compose file
+  # pinned the image back to 15 — a 16-initialized data directory can't be
+  # opened by 15 and would crash-loop on `docker compose up -d`. See README.
+  rudder-pgdata-pg15:

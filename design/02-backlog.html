@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — 선적 대기 보드</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+</head>
+<body data-page="backlog">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 class="h-panel">선적 대기 보드</h1>
+        <span class="eyebrow">board</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" placeholder="제목, 번호, 담당자 검색" aria-label="이슈 검색">
+      </label>
+      <button class="btn btn--primary" type="button">새 이슈</button>
+    </header>
+
+    <div class="view">
+      <div class="view__head">
+        <h2 class="h-view">2026 Q3 · 순항 중</h2>
+        <span class="mono muted push">18건 · P0 2건</span>
+      </div>
+      <p class="view__lede">
+        선적 대기 열의 순서가 팀이 다음에 할 일의 순서입니다. 카드를 끌어 옮기거나
+        카드를 선택하고 ⌥↑ / ⌥↓ 로 바꿉니다. 순서 변경은 히스토리에 남습니다.
+      </p>
+
+      <div class="inline" style="margin-bottom:var(--s-4)">
+        <div class="filters">
+          <button class="fchip" aria-pressed="true">전체<span class="fchip__n">18</span></button>
+          <button class="fchip" aria-pressed="false">tyche-dashboard<span class="fchip__n">6</span></button>
+          <button class="fchip" aria-pressed="false">tyche-slack-bot<span class="fchip__n">4</span></button>
+          <button class="fchip" aria-pressed="true">lpa-collected<span class="fchip__n">5</span></button>
+          <button class="fchip" aria-pressed="false">partslink<span class="fchip__n">3</span></button>
+        </div>
+        <span class="push"><button class="btn btn--sm" type="button">반송 보기</button></span>
+      </div>
+
+      <div class="board">
+        <!-- 선적 대기 -->
+        <section class="col" aria-label="선적 대기">
+          <div class="col__head">
+            <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span>
+            <span class="col__n">6</span>
+          </div>
+          <div class="col__body">
+            <article class="card card--p0" tabindex="0">
+              <div class="card__top">
+                <span class="id">#151</span><span class="ptag ptag--p0">P0</span>
+                <span class="card__grip" aria-hidden="true">⠿</span>
+              </div>
+              <h3 class="h-card">eBay 주문 동기화가 03시 배치에서 12건 누락됩니다</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+                <span class="mono faint">lpa-collected</span>
+              </div>
+              <footer class="card__foot"><span>최민호</span><span class="push mono">2026 Q3</span></footer>
+            </article>
+
+            <div class="drop" aria-hidden="true"></div>
+
+            <article class="card card--lifted" tabindex="0">
+              <div class="card__top">
+                <span class="id">#137</span><span class="ptag ptag--p1">P1</span>
+                <span class="card__grip" aria-hidden="true" style="opacity:1">⠿</span>
+              </div>
+              <h3 class="h-card">환율 버퍼를 상품군별로 다르게 설정하고 싶습니다</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+                <span class="mono faint">lpa-collected</span>
+              </div>
+              <footer class="card__foot"><span>김한솔</span><span class="push mono">2026 Q4</span></footer>
+            </article>
+
+            <article class="card" tabindex="0">
+              <div class="card__top">
+                <span class="id">#150</span><span class="ptag ptag--p1">P1</span>
+                <span class="card__grip" aria-hidden="true">⠿</span>
+              </div>
+              <h3 class="h-card">마일스톤별 진척률을 매주 월요일 슬랙으로 보내주세요</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+                <span class="mono faint">tyche-slack-bot</span>
+              </div>
+              <footer class="card__foot"><span>미배정</span><span class="push mono">2026 Q3</span></footer>
+            </article>
+
+            <article class="card" tabindex="0">
+              <div class="card__top">
+                <span class="id">#129</span><span class="ptag ptag--p2">P2</span>
+                <span class="card__grip" aria-hidden="true">⠿</span>
+              </div>
+              <h3 class="h-card">정산 리포트 PDF 버튼이 사파리에서 동작하지 않습니다</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+                <span class="mono faint">tyche-dashboard</span>
+              </div>
+              <footer class="card__foot"><span>미배정</span><span class="push mono">미배정</span></footer>
+            </article>
+          </div>
+          <div class="col__note">드래그로 순서 변경 · 카드 선택 후 ⌥↑ / ⌥↓</div>
+        </section>
+
+        <!-- 항해 중 -->
+        <section class="col" aria-label="항해 중">
+          <div class="col__head">
+            <span class="chip chip--progress"><span class="flag flag--progress" aria-hidden="true"></span>항해 중<span class="chip__en">In Progress</span></span>
+            <span class="col__n">3</span>
+          </div>
+          <div class="col__body">
+            <article class="card card--p0" tabindex="0">
+              <div class="card__top"><span class="id">#144</span><span class="ptag ptag--p0">P0</span></div>
+              <h3 class="h-card">mobis 크롤러가 프록시 차단 후 빈 결과를 저장합니다</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+                <span class="mono faint">lpa-collected</span>
+              </div>
+              <footer class="card__foot"><span>최민호</span><span class="push mono">2026 Q3</span></footer>
+            </article>
+            <article class="card" tabindex="0">
+              <div class="card__top"><span class="id">#132</span><span class="ptag ptag--p1">P1</span></div>
+              <h3 class="h-card">주문 상태 변경 시 요청자에게 슬랙 DM 보내기</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+                <span class="mono faint">tyche-slack-bot</span>
+              </div>
+              <footer class="card__foot"><span>김한솔</span><span class="push mono">2026 Q3</span></footer>
+            </article>
+            <article class="card" tabindex="0">
+              <div class="card__top"><span class="id">#126</span><span class="ptag ptag--p2">P2</span></div>
+              <h3 class="h-card">부품번호 검색 결과에 호환 차종을 함께 보여주세요</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+                <span class="mono faint">partslink</span>
+              </div>
+              <footer class="card__foot"><span>박지연</span><span class="push mono">2026 Q3</span></footer>
+            </article>
+          </div>
+        </section>
+
+        <!-- 정박 -->
+        <section class="col" aria-label="정박">
+          <div class="col__head">
+            <span class="chip chip--hold"><span class="flag flag--hold" aria-hidden="true"></span>정박<span class="chip__en">On Hold</span></span>
+            <span class="col__n">1</span>
+          </div>
+          <div class="col__body">
+            <article class="card" tabindex="0">
+              <div class="card__top"><span class="id">#118</span><span class="ptag ptag--p1">P1</span></div>
+              <h3 class="h-card">eBay Compliance API 대체 경로 조사</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+                <span class="mono faint">tyche-dashboard</span>
+              </div>
+              <p class="hint">정박 사유 · eBay 신규 API 문서 공개 대기 (2026-09 예정)</p>
+              <footer class="card__foot"><span>김한솔</span><span class="push mono">2026 Q4</span></footer>
+            </article>
+          </div>
+        </section>
+
+        <!-- 배송 완료 -->
+        <section class="col" aria-label="배송 완료">
+          <div class="col__head">
+            <span class="chip chip--done"><span class="flag flag--done" aria-hidden="true"></span>배송 완료<span class="chip__en">Done</span></span>
+            <span class="col__n">8</span>
+          </div>
+          <div class="col__body">
+            <article class="card" tabindex="0">
+              <div class="card__top"><span class="id">#139</span><span class="ptag ptag--p1">P1</span></div>
+              <h3 class="h-card">토큰 만료 임박 시 슬랙 경고 보내기</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">＋</span>기능</span>
+                <span class="mono faint">tyche-slack-bot</span>
+              </div>
+              <footer class="card__foot"><span>최민호</span><span class="arrived push">07-28 도착</span></footer>
+            </article>
+            <article class="card" tabindex="0">
+              <div class="card__top"><span class="id">#131</span><span class="ptag ptag--p2">P2</span></div>
+              <h3 class="h-card">재고 조회 응답에 공급사 코드 추가</h3>
+              <div class="card__meta">
+                <span class="ttag"><span class="ttag__g">↑</span>개선</span>
+                <span class="mono faint">lpa-collected</span>
+              </div>
+              <footer class="card__foot"><span>최민호</span><span class="arrived push">07-24 도착</span></footer>
+            </article>
+            <div class="col__note" style="padding:0">최근 5건만 표시 · 전체 보기</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

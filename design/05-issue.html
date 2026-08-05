@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder — #151</title>
+<link rel="stylesheet" href="rudder.css">
+<script src="shell.js" defer></script>
+</head>
+<body data-page="backlog">
+<div class="app">
+  <div data-rail></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <a class="mono muted" href="02-backlog.html">선적 대기 보드</a>
+        <span class="faint" aria-hidden="true">/</span>
+        <span class="id">#151</span>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="btn btn--sm" type="button">관계 추가</button>
+    </header>
+
+    <div class="view">
+      <div class="inline" style="margin-bottom:var(--s-2)">
+        <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span>
+        <span class="ptag ptag--p0">P0</span>
+        <span class="ttag"><span class="ttag__g">▲</span>버그</span>
+        <span class="mono faint">lpa-collected · 2026 Q3</span>
+      </div>
+      <h1 class="h-view" style="max-width:62ch;margin-bottom:var(--s-2)">
+        eBay 주문 동기화가 03시 배치에서 12건 누락됩니다
+      </h1>
+      <p class="view__lede">
+        <span class="mono">#151</span> · 박지연이 요청 · 도선사(슬랙 봇)가 등록 · 07-29 14:02 등록 ·
+        <span class="mono">v4</span>
+      </p>
+
+      <div class="split">
+        <div class="stack">
+          <section class="panel">
+            <div class="panel__head"><h2 class="h-card">설명</h2></div>
+            <div class="panel__body">
+              <p class="prose">
+                3시 배치가 돌고 난 뒤 eBay 주문 12건이 <code class="mono">raw_ebay.orders</code>에
+                들어오지 않았습니다. 슬랙에서 주문번호 목록을 확인했고, 해당 주문은 eBay 판매자
+                센터에서는 정상 조회됩니다.
+              </p>
+              <p class="prose">
+                오늘 발송 마감(18시) 전에 적재되지 않으면 지연 발송으로 집계됩니다.
+                재적재만이라도 먼저 부탁드립니다.
+              </p>
+              <div class="divider" style="margin:var(--s-4) 0"></div>
+              <span class="label">첨부</span>
+              <div class="att" style="margin-top:var(--s-2)">
+                <span class="att__item">누락_주문번호<br>.csv</span>
+                <span class="att__item">배치로그<br>0729.png</span>
+                <button class="att__item" type="button" style="cursor:pointer">＋ 추가</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="h-card">댓글</h2>
+              <span class="mono muted push">3</span>
+            </div>
+            <div class="panel__body">
+              <div class="thread">
+                <div class="cmt">
+                  <span class="avatar" aria-hidden="true">박</span>
+                  <div>
+                    <div class="cmt__head">
+                      <span class="cmt__who">박지연</span><span class="cmt__role">운영 · 요청자</span>
+                      <span class="mono faint push">07-29 14:05</span>
+                    </div>
+                    <div class="cmt__body">주문번호 목록 첨부했습니다. 12건 모두 미국 배송분입니다.</div>
+                  </div>
+                </div>
+                <div class="cmt">
+                  <span class="avatar" aria-hidden="true">최</span>
+                  <div>
+                    <div class="cmt__head">
+                      <span class="cmt__who">최민호</span><span class="cmt__role">개발 · 담당자</span>
+                      <span class="mono faint push">07-29 15:40</span>
+                    </div>
+                    <div class="cmt__body">
+                      03:02 호출이 401을 받았습니다. 토큰 재발급 후 12건 재적재했고 대시보드에도 반영됐습니다.
+                      근본 원인(만료 임박 감지 없음)은 <span class="mono">#139</span>로 이미 처리 중이라
+                      이 건은 재발 방지 확인만 남았습니다.
+                    </div>
+                  </div>
+                </div>
+                <div class="cmt">
+                  <span class="avatar" aria-hidden="true">박</span>
+                  <div>
+                    <div class="cmt__head">
+                      <span class="cmt__who">박지연</span><span class="cmt__role">운영 · 요청자</span>
+                      <span class="mono faint push">07-29 16:12</span>
+                    </div>
+                    <div class="cmt__body">확인했습니다. 12건 모두 발송 처리했습니다. 감사합니다.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider" style="margin:var(--s-5) 0 var(--s-4)"></div>
+
+              <div class="cmt">
+                <span class="avatar" aria-hidden="true">한</span>
+                <div class="stack--sm" style="display:flex;flex-direction:column">
+                  <textarea class="textarea" placeholder="댓글을 남기면 요청자에게 슬랙으로 전달됩니다." aria-label="댓글 입력"></textarea>
+                  <div class="inline">
+                    <button class="btn btn--sm" type="button">파일 첨부</button>
+                    <span class="push"><button class="btn btn--primary btn--sm" type="button">댓글 남기기</button></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="stack">
+          <section class="panel">
+            <div class="panel__body">
+              <div class="meta">
+                <div class="meta__row">
+                  <span class="meta__k">상태</span>
+                  <span class="meta__v">
+                    <span class="chip chip--backlog"><span class="flag flag--backlog" aria-hidden="true"></span>선적 대기<span class="chip__en">Backlog</span></span>
+                  </span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">우선순위</span>
+                  <span class="meta__v"><span class="ptag ptag--p0">P0</span><span class="faint">가장 먼저</span></span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">제품</span>
+                  <span class="meta__v">lpa-collected</span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">마일스톤</span>
+                  <span class="meta__v">2026 Q3</span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">담당자</span>
+                  <span class="meta__v"><span class="avatar" aria-hidden="true">최</span>최민호</span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">요청자</span>
+                  <span class="meta__v">
+                    <span class="avatar" aria-hidden="true">박</span>박지연
+                    <span class="flag flag--pilot" aria-hidden="true" title="도선사(봇)가 대신 등록"></span>
+                  </span>
+                </div>
+                <div class="meta__row">
+                  <span class="meta__k">백로그 순서</span>
+                  <span class="meta__v mono">1 / 6</span>
+                </div>
+              </div>
+              <div class="divider" style="margin:var(--s-4) 0"></div>
+              <div class="inline">
+                <button class="btn btn--accent btn--sm" type="button">항해 시작</button>
+                <button class="btn btn--sm" type="button">정박</button>
+                <button class="btn btn--danger btn--sm" type="button">반송</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head"><h2 class="h-card">관계</h2><span class="mono muted push">2</span></div>
+            <div class="panel__body">
+              <div class="rel">
+                <span class="rel__kind">blocks</span>
+                <a class="rel__title" href="#">#152 발송 지연 알림 임계값 조정</a>
+              </div>
+              <div class="rel">
+                <span class="rel__kind">relates</span>
+                <a class="rel__title" href="#">#139 토큰 만료 임박 시 슬랙 경고 보내기</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head"><h2 class="h-card">히스토리</h2></div>
+            <div class="panel__body">
+              <div class="log">
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span>
+                    <span class="log__who">도선사</span> 등록
+                    <span class="flag flag--pilot" aria-hidden="true" style="vertical-align:-2px"></span>
+                    <span class="log__field">created</span>
+                  </span>
+                  <span class="mono faint">07-29 14:02</span>
+                </div>
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span><span class="log__who">김한솔</span> 우선순위 <b>없음 → P0</b> <span class="log__field">priority</span></span>
+                  <span class="mono faint">07-29 14:31</span>
+                </div>
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span><span class="log__who">김한솔</span> 상태 <b>입항 대기 → 선적 대기</b> <span class="log__field">status</span></span>
+                  <span class="mono faint">07-29 14:31</span>
+                </div>
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span><span class="log__who">김한솔</span> 마일스톤 <b>2026 Q3</b> 지정 <span class="log__field">milestone_id</span></span>
+                  <span class="mono faint">07-29 14:32</span>
+                </div>
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span><span class="log__who">김한솔</span> 담당자 <b>최민호</b> 지정 <span class="log__field">assignee_id</span></span>
+                  <span class="mono faint">07-29 15:10</span>
+                </div>
+                <div class="log__item">
+                  <span class="log__rail"><span class="log__pip"></span></span>
+                  <span><span class="log__who">김한솔</span> 백로그 순서 <b>3 → 1</b> <span class="log__field">sort_order</span></span>
+                  <span class="mono faint">07-29 15:12</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

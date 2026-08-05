@@ -1,0 +1,37 @@
+node_modules
+.next
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+.git
+.github
+.worktrees
+.omc
+
+.env*
+credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+sa.json
+service-account*.json
+*-credentials.json
+gcp-key*.json
+
+.DS_Store
+README.md
+
+# not imported at runtime — src/app/globals.css is the copy actually served
+design
+docs
+tests
+
+# root-level test-harness config, not runtime code. tsconfig's `**/*.ts`
+# include means `next build`'s type check picks this up even though nothing
+# at runtime imports it — and it imports from ./tests/e2e/helpers, which
+# doesn't exist once `tests` above is excluded. Keep it out of the image the
+# same way `tests` itself is; don't drop it while "cleaning up" this list.
+playwright.config.ts
