@@ -40,7 +40,7 @@
     "drizzle-kit": "^0.31.10",
     "jsdom": "^30.0.1",
     "tsx": "^4.23.1",
-    "typescript": "^5",
+    "typescript": "^7",
     "vitest": "^4.1.10"
   },
   "overrides": {
