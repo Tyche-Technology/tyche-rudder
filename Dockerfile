@@ -2,13 +2,13 @@
 # Node >=20.9 is a hard floor (sharp@0.35.x, Next 16.2.12) — node:22-alpine clears it.
 
 # ---- deps: npm ci once, reused by the build stage and (for two packages) the runtime stage ----
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS deps
+FROM node:26-alpine@sha256:aadf416b2cdce311a8811ba3f0608a61b77dbf997500e2eafe781b51f6a0b019 AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
 # ---- builder: full source + deps, produces .next/standalone ----
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS builder
+FROM node:26-alpine@sha256:aadf416b2cdce311a8811ba3f0608a61b77dbf997500e2eafe781b51f6a0b019 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -37,7 +37,7 @@ RUN node_modules/.bin/esbuild scripts/revoke-token.ts \
   --outfile=scripts/revoke-token.mjs
 
 # ---- runner: minimal runtime image ----
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
+FROM node:26-alpine@sha256:aadf416b2cdce311a8811ba3f0608a61b77dbf997500e2eafe781b51f6a0b019 AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
