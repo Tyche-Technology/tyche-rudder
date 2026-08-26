@@ -30,7 +30,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.4",
+    "@electric-sql/pglite": "^0.5.6",
     "@playwright/test": "^1.62.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
